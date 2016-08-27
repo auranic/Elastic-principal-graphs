@@ -20,4 +20,6 @@ For more details of elastic principal graph theory consult the bibliography:
 
 3) Gorban A, Sumner N, Zinovyev A. Beyond The Concept of Manifolds: Principal Trees, Metro Maps, and Elastic Cubic Complexes. 2008. Lecture Notes in Computational Science and Engeneering 58: 223-240.
 
-4) Gorban A., Zinovyev A. Elastic Principal Graphs and Manifolds and their Practical Applications. 2005. Computing 75,359 -379
+4) Gorban AN, Sumner NR, Zinovyev AY. Topological grammars for data approximation. Applied Mathematics Letters 20 (4), 382-386.
+
+5) Gorban A., Zinovyev A. Elastic Principal Graphs and Manifolds and their Practical Applications. 2005. Computing 75,359 -379
