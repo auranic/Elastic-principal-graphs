@@ -1,5 +1,5 @@
 # Elastic principal graphs
-Matlab implementation of the interface to constructing Elastic Principal Graphs
+Matlab implementation of the interface to the  Elastic Principal Graphs method
 
 Principal graphs are graphs that are embedded into a high-dimensional space and minimize the distance to the data points, while maximizing some regular properties.
 
