@@ -28,19 +28,24 @@ config.algtype = parameters.algtype;
 config.stretchInitCoeffs(1) = parameters.initstretch1;
 config.initStrategy = parameters.initalgorithm;
 
-for i=1:size(parameters.epochs,1)
+for i=1:size(parameters.epochs,2)
     epoch = vdaoengine.analysis.elmap.ElmapAlgorithmEpoch;
     
     epoch.grammarType = parameters.epochs(i).grammartype;
 
     epoch.EP = parameters.epochs(i).ep;
+    if size(EP,2)>=i
     if EP(i)>0
         epoch.EP = EP(i);
     end
+    end
     epoch.RP = parameters.epochs(i).rp;
+    if size(RP,2)>=i
     if RP(i)>0
         epoch.RP = RP(i);
     end
+    end
+        
     %epoch.numberOfIterations = parameters.epochs(i).numiter;
     epoch.numberOfIterations = NumNodes(i);
     epoch.maxNumberOfIterationsForSLAU = parameters.epochs(i).numiterSLAU;
@@ -48,7 +53,6 @@ for i=1:size(parameters.epochs,1)
     epoch.epsConvergenceSLAU = parameters.epochs(i).epsSLAU;
     
     if isfield(parameters.epochs(i),'robust')
-        epoch.robust
         parameters.epochs(i).robust
         epoch.robust = parameters.epochs(i).robust;
     end
@@ -56,13 +60,15 @@ for i=1:size(parameters.epochs,1)
         epoch.trimradius = parameters.epochs(i).trimradius;
     end
     
-    
     config.epochs.add(epoch);
 end
 
 cpg = vdaoengine.analysis.grammars.ComputePrincipalGraph;
 
 cpg.config = config;
+
+%cpg.config.epochs(0).ep
+%cpg.config.epochs(0).rp
 
 cpg.setDataSetAsMassif(data);
 report = cpg.compute();

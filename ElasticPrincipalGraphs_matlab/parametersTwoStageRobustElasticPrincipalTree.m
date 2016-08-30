@@ -24,14 +24,14 @@ params.epochs(1).grammartype = 'treeWithPruning';
 
 % elasticity parameters
 params.epochs(1).ep = 0.01;
-params.epochs(1).rp = 0.1;
+params.epochs(1).rp = 1;
 
 % default number of nodes
 params.epochs(1).numiter = 30;
 
 
 params.epochs(1).robust = false;
-params.epochs(1).trimradius = 0.4;
+params.epochs(1).trimradius = 0.1;
 
 %%%%%%%%%%%
 % Epoch 2 %
@@ -47,12 +47,12 @@ params.epochs(2).numiterSLAU = 1000;
 params.epochs(2).grammartype = 'treeWithPruning';
 
 % elasticity parameters
-params.epochs(2).ep = 0.001;
-params.epochs(2).rp = 0.001;
+params.epochs(2).ep = 0.0001;
+params.epochs(2).rp = 0.0001;
 
 % default number of nodes
 params.epochs(2).numiter = 30;
 
 % robustness parameters
 params.epochs(2).robust = true;
-params.epochs(2).trimradius = 0.4;
+params.epochs(2).trimradius = 0.1;

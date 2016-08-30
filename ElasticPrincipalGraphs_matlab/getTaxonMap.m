@@ -21,11 +21,11 @@ TaxonMap = containers.Map;
 for i=1:numberOfNodes
     
     tx = elo.taxons.get(i-1);
-    taxonSize = size(tx,1);
+    taxonSize = tx.size();
     clear taxon;
     taxon = zeros(taxonSize,1);
     for j=1:taxonSize
-        taxon(j) = tx(j)+1;
+        taxon(j) = tx.get(j-1)+1;
     end
     
     TaxonMap(num2str(i)) = taxon;

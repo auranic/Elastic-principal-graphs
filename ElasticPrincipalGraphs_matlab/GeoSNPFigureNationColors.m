@@ -28,7 +28,6 @@ for i=1:size(data,1)
     if strcmp(region,'NEAR_EAST')
         LabelColorMap(label) = [0.75 0.75 0.75];
     end
-        
 end
 
 LabelColorMap('Druze') = [0.5 0.5 0.5];
