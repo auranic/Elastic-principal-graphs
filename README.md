@@ -12,7 +12,7 @@ where MSE is the mean squared error of data approximation, UR - is the sum of sq
 The structure of the graph is computed by an optimal application of a sequence of graph transformations, using operations from predefined graph grammar.
 The simplest graph grammar "Bisect an edge", "Add a node to a node" leads to construction of a principal tree.
 
-Read wiki of this repository for much more detailed information on the algorithm.
+Read [wiki](https://github.com/auranic/Elastic-principal-graphs/wiki) of this repository for much more detailed information on the algorithm.
 
 For more details of elastic principal graph theory consult the bibliography:
 
