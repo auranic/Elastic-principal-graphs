@@ -5,7 +5,7 @@ params.algtype = 'grammar';
 params.initstretch1 = 1;
 
 % initialization by a piece of first principal component
-params.initalgorithm = 1;
+params.initalgorithm = 0;
 
 %%%%%%%%%%%
 % Epoch 1 %

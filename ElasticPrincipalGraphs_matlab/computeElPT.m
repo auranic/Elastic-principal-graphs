@@ -4,6 +4,8 @@ function [NodePositions,Edges,ReportTable,cpg] = computeElPT(data,NumNodes,varar
 EP = -1;
 % Elasticity module bending
 RP = -1;
+% Trimming radius
+TrimRadius = -1;
 
 parameterfunction_handle = @parametersDefaultPrincipalTree;
 
@@ -15,6 +17,8 @@ parameterfunction_handle = @parametersDefaultPrincipalTree;
             RP = varargin{i+1};
         elseif strcmpi(varargin{i},'ParameterSet')
             parameterfunction_handle = varargin{i+1};
+        elseif strcmpi(varargin{i},'TrimRadius')
+            TrimRadius = varargin{i+1};
         end
     end
 
@@ -58,6 +62,11 @@ for i=1:size(parameters.epochs,2)
     end
     if isfield(parameters.epochs(i),'trimradius')
         epoch.trimradius = parameters.epochs(i).trimradius;
+    end
+    
+    if TrimRadius>0
+        epoch.robust = true;
+        epoch.trimradius = TrimRadius(i);
     end
     
     config.epochs.add(epoch);
