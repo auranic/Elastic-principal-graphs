@@ -17,7 +17,7 @@ mv1 = repmat(mv,size(data,1),1);
 data_centered = data - mv1;
 
 if reduceDimension
-    [vglobal,uglobal,sglobal] = pca(data_centered);
+    [vglobal,uglobal,sglobal] = princomp(data_centered);
     if size(newDimension,2)>1
         startPC = newDimension(1);
         endPC = newDimension(2);
@@ -34,7 +34,7 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%  Plots of MSE, elastic energy optimization
 figure;
-[v,u,explainedVariances] = pca(data_centered);
+[v,u,explainedVariances] = princomp(data_centered);
 if ~reduceDimension
     vglobal = v;
     uglobal = u;
