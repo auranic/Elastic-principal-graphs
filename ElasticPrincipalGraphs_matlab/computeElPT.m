@@ -6,6 +6,7 @@ EP = -1;
 RP = -1;
 % Trimming radius
 TrimRadius = -1;
+initGraph = 0;
 
 parameterfunction_handle = @parametersDefaultPrincipalTree;
 
@@ -19,6 +20,10 @@ parameterfunction_handle = @parametersDefaultPrincipalTree;
             parameterfunction_handle = varargin{i+1};
         elseif strcmpi(varargin{i},'TrimRadius')
             TrimRadius = varargin{i+1};
+        elseif strcmpi(varargin{i},'InitGraph')
+            initGraph = 1;
+            InitNodePositions = varargin{i+1};
+            InitEdges = varargin{i+2};
         end
     end
 
@@ -80,6 +85,12 @@ cpg.config = config;
 %cpg.config.epochs(0).rp
 
 cpg.setDataSetAsMassif(data);
+
+if(initGraph)
+    cpg.config.initStrategy = -1;
+    cpg.setPrimitiveGraphByNodesAndEdges(InitNodePositions,InitEdges);
+end
+
 report = cpg.compute();
 
 fn = tempname;

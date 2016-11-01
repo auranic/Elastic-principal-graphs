@@ -5,6 +5,7 @@ EdgeNum = size(Edges,1);
 scale = sqrt(sum(std(NodePositions(:,1:2))));
 NodeSizes = zeros(NodeNum,1);
 
+LineWidth = 1;
 
 showClusterNumbers = 1;
 
@@ -13,6 +14,8 @@ showClusterNumbers = 1;
             showClusterNumbers = varargin{i+1};
         elseif strcmpi(varargin{i},'NodeSizes')
             NodeSizes = varargin{i+1};
+        elseif strcmpi(varargin{i},'LineWidth')
+            LineWidth = varargin{i+1};
         end
     end
 
@@ -36,9 +39,9 @@ np = cast(NodePositions,'DOUBLE');
 
 for i=1:NodeNum
     if ns(i)>0
-        plot(np(i,1),np(i,2),'bo','MarkerSize',ns(i)); hold on;
+        plot(np(i,1),np(i,2),'bo','MarkerSize',ns(i),'LineWidth',LineWidth); hold on;
     else
-        plot(np(i,1),np(i,2),'bs','MarkerSize',1); hold on;
+        plot(np(i,1),np(i,2),'bs','MarkerSize',1,'LineWidth',LineWidth); hold on;
     end
     if showClusterNumbers
     text(np(i,1),np(i,2),sprintf('%i',i));
@@ -46,6 +49,6 @@ for i=1:NodeNum
 end
 
 for i=1:EdgeNum
-    plot([NodePositions(Edges(i,1),1) NodePositions(Edges(i,2),1)],[NodePositions(Edges(i,1),2) NodePositions(Edges(i,2),2)],'r-','LineWidth',1);
+    plot([NodePositions(Edges(i,1),1) NodePositions(Edges(i,2),1)],[NodePositions(Edges(i,1),2) NodePositions(Edges(i,2),2)],'r-','LineWidth',LineWidth);
 end
 
