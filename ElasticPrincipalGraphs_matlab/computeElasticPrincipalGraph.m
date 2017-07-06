@@ -24,7 +24,7 @@ computeElasticPrincipalGraph(data,NumNodes,ParameterSet,varargin)
 %               parametersPrincipalCurve.m
 %               parametersPrincipalCircle.m
 %           Detailed description of each listed function is included into
-%           corresponding m file. Description of parameters function
+%           corresponding m files. Description of parameters function
 %           development is included into all listed files and to WIKI???
 %           If you use parameterFunction with several epoches then see
 %           Several epoch strategies below.

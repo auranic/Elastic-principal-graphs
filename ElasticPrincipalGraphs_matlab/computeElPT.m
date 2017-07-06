@@ -69,7 +69,7 @@ function [NodePositions, Edges, ReportTable, cpg] = ...
 %               parametersTwoStageRobustElasticPrincipalTree.m
 %           Default value is parametersDefaultPrincipalTree. Detailed
 %           description of each listed function is included into
-%           corresponding m file. Description of parameters function
+%           corresponding m files. Description of parameters function
 %           development is included into all listed files and to WIKI???
 %           If you use parameterFunction with several epoches (for example,
 %           parametersTwoStageRobustElasticPrincipalTree.m) then see Several
