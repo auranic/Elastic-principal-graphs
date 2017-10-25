@@ -31,23 +31,34 @@ For more details of elastic principal graph theory read:
 
 # Organization of the code
 
-Folders:
+## Folders:
 
 core_algorithm 		- contains the core MATLAB code of the algorithm (self-contained)
+
 core_algorithm_java	- old MATLAB wrapper of the Java code for ElPiGraph
+
 docs			- some documentation on the method and the code
+
 examples		- some example applications of the method
+
 simulations		- code generating synthetic datasets (e.g., with known branching topology)
+
 test_code		- testing critical parts of the code (not needed for the package use)
+
 test_data		- example datasets 
+
 utils			- utility functions for manipulating data and the graph (e.g., projection function)
+
 visualization		- utility functions used for visualizing the results of the method application (such as applying metro map layout of the principal tree)
 
-Functions in the root folder:
+## Functions in the root folder:
 
 computeElasticPrincipalCircle.m		- computes closed elastic principal curve with a given number of nodes
+
 computeElasticPrincipalCurve.m          - computes elastic principal curve with a given number of nodes
+
 computeElasticPrincipalGraph.m		- computes elastic principal graph for a dataset with a given number of nodes and defined set of grammars (principal tree grammar by default)
+
 setallpaths.m				- set all paths to other folders (needed if some functions are called directly, bypassing the root folder "computeElasticPrincipalXXX.m" functions)
 
  
