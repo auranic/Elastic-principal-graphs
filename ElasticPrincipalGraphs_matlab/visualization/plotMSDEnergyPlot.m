@@ -10,7 +10,7 @@ function plotMSDEnergyPlot(ReportTable,eigValues)
     % Extract data from table
     n = table2array(ReportTable(:,'NNODES'));
     % Draw main graph
-    h = plot(n,[table2array(ReportTable(:,'MSEP')),...
+    h = plot(n,[table2array(ReportTable(:,'MSE')),...
         table2array(ReportTable(:,'ENERGY'))],'-','LineWidth',2); 
     hold on;
     % Draw eigen values if presented

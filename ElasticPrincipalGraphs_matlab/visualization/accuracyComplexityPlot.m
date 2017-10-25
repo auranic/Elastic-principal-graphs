@@ -10,6 +10,7 @@ function accuracyComplexityPlot(ReportTable)
     urn2 = table2array(ReportTable(:,'URN2'));
     fvep = table2array(ReportTable(:,'FVE'));
     n = table2array(ReportTable(:,'NNODES'));
+    bcodes = table2array(ReportTable(:,'BARCODE'));
     % Draw graph
     plot(fvep,urn2,'r-o','LineWidth',2); 
     hold on;
@@ -21,7 +22,8 @@ function accuracyComplexityPlot(ReportTable)
         if x<min(xp,xn)
             diff = abs(x-(xp+xn)/2);
             if diff>0.01
-                text(fvep(i),urn2(i),table2array(ReportTable(i,2)),'FontSize',14);
+                s = bcodes(i,:);
+                text(fvep(i),urn2(i),s,'FontSize',14);
             end
         end
     end

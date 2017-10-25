@@ -1,18 +1,17 @@
 function [NodePositions, Edges, ReportTable, cpg] =...
-    computeElasticPrincipalTree(data, NumNodes, varargin)
-%computeElasticPrincipalTree calculate elastic principal tree which is one
-%of the simplest and very useful type of principal graphs.
+computeElasticPrincipalGraph_java(data,NumNodes,ParameterSet,varargin)
+%computeElasticPrincipalGraph calculate elastic principal graph. 
 %Theory and some examples of computeElasticPrincipalTree usage can be found
 %in https://github.com/auranic/Elastic-principal-graphs/wiki/Basic-use-of-Elastic-Principal-Graphs-Matlab-package
 %
 %Usage
-%   [NodePositions, Edges] = computeElasticPrincipalTree(data,NumNodes)
-%   returns 
+%   [NodePositions, Edges] = computeElasticPrincipalGraph(data, NumNodes,
+%   ParameterSet) returns 
 %       NodePositions is k-by-m matrix of coordinates of k nodes in m
 %           dimensional space for n-by-m matrix data (each row of matrix
 %           contains one observation) and at most NumNodes nodes k.
 %       Edges is k-by-2 matrix of integers. Edges(i,1) and Edges(i,2)
-%           specify numbers of two vertex of i-th edge. 
+%           specify numbers of two vertex of i-th edge.
 %   Input features:
 %       data is n-by-m matrix data (each row of matrix contains one
 %           observation).
@@ -20,7 +19,16 @@ function [NodePositions, Edges, ReportTable, cpg] =...
 %           number of nodes in calculated graph is not greater than
 %           sum(NumNodes). For more details see Several epoch strategies
 %           below.
-%   By default computeElasticPrincipalTree also prepare four figures:
+%       ParameterSet is special function to define parameters of
+%           algorithm. There are two standard functions:
+%               parametersPrincipalCurve.m
+%               parametersPrincipalCircle.m
+%           Detailed description of each listed function is included into
+%           corresponding m files. Description of parameters function
+%           development is included into all listed files and to WIKI???
+%           If you use parameterFunction with several epoches then see
+%           Several epoch strategies below.
+%   By default computeElasticPrincipalGraph also prepare tree figures:
 %       "Accuracy/Complexity plot" shows the dependence of the normalized
 %           geometrical complexity on the number of nodes. This graph is
 %           very useful to find optimal number of nodes. You can produce
@@ -30,19 +38,13 @@ function [NodePositions, Edges, ReportTable, cpg] =...
 %           graph onto the first two principal components of the data. In
 %           other words this graph is visualisation of data and graph. You
 %           can produce this graph later by function PCAView.
-%       "Metro map layout of the principal tree" presents 'topological
-%           skeleton' of graph. In the PCA view of principal tree some
-%           nodes can be hidden by other nodes but in metro map all nodes
-%           always visible. You can produce this graph later by function
-%           drawMetroMap(NodePositions,Edges, 'NodeSizes',...
-%               cpg.graph.countNumberOfPointsProjected(cpg.dataset) + 1); 
 %       "MSE and Elastic energy plot" shows the dynamics of data
 %           approximation and elastic energy term during principal tree
 %           construction. You can produce this graph later by function
 %           plotMSDEnergyPlot(ReportTable).
 %
-%   [NodePositions, Edges, ReportTable] =
-%                              computeElasticPrincipalTree(data,NumNodes)
+%   [NodePositions, Edges, ReportTable] = 
+%           computeElasticPrincipalGraph(data, NumNodes, ParameterSet)
 %       returns also ReportTable. Report table is table with 17 columns:
 %           STEP is number of iteration
 %           BARCODE is barcode in form ...S4|S3||N, where N is number of
@@ -71,7 +73,7 @@ function [NodePositions, Edges, ReportTable, cpg] =...
 %           URSD is standard deviation of UR???
 %
 %   [NodePositions, Edges, ReportTable, cpg] = 
-%                               computeElasticPrincipalTree(data,NumNodes)
+%                computeElasticPrincipalTree(data, NumNodes, ParameterSet))
 %       returns also vdaoengine.analysis.grammars.ComputePrincipalGraph
 %           Java container object cpg with various service functions.
 %           Description of this functions can be found in ???
@@ -92,7 +94,7 @@ function [NodePositions, Edges, ReportTable, cpg] =...
 %               parametersTwoStageRobustElasticPrincipalTree.m
 %           Default value is parametersDefaultPrincipalTree. Detailed
 %           description of each listed function is included into
-%           corresponding m files. Description of parameters function
+%           corresponding m file. Description of parameters function
 %           development is included into all listed files and to WIKI???
 %           If you use parameterFunction with several epoches (for example,
 %           parametersTwoStageRobustElasticPrincipalTree.m) then see Several
@@ -197,18 +199,19 @@ function [NodePositions, Edges, ReportTable, cpg] =...
 %
 %
 %
-%Example:
+%Example:  ?????   is not done!
 %   load('test_data/iris/iris.mat');
 %   [NodePositions, Edges, ReportTable, cpg, mml] =...
 %       computeElasticPrincipalTree(table2array(iris(:,2:end)),20);
 %
+
+setallpaths;
 
     % Parse optional argumentes
     reduceDimension = 0;
     newDimension = -1;
     drawAccuracyComplexity = true;
     drawPCAView = true;
-    drawMetroMaps = true;
     drawEnergy = true;
 
     for i=1:2:length(varargin)
@@ -218,7 +221,6 @@ function [NodePositions, Edges, ReportTable, cpg] =...
         elseif strcmpi(varargin{i},'Graphs')
             tmp = uint8(varargin{i+1});
             drawEnergy = bitand(tmp,8)>0;
-            drawMetroMaps = bitand(tmp,4)>0;
             drawPCAView = bitand(tmp,2)>0;
             drawAccuracyComplexity = bitand(tmp,1)>0;
         end
@@ -247,19 +249,19 @@ function [NodePositions, Edges, ReportTable, cpg] =...
         indPC = 1:size(data,2);
     end
 
-	% Calculate principal tree
-    [NodePositions, Edges, ReportTable, cpg] = ...
+	% Calculate principal graph
+    varargin{end + 1} = 'ParameterSet';
+    varargin{end + 1} = ParameterSet;
+    [NodePositions,Edges,ReportTable,cpg] =...
         computeElPT(data_centered,NumNodes,varargin{:});
 
     %%%%%%%%%%%%%%%%%%%%%%%% Preparing the output arguments
-    
     if reduceDimension
         %Project nodes back into the initial, non-reduced space
         NodePositions = NodePositions*vglobal(:,indPC)';
     end
     NodePositions = bsxfun(@plus,NodePositions,mv);
-    
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%  Plots of MSE, elastic energy optimization
     if drawEnergy
         plotMSDEnergyPlot(ReportTable,explainedVariances);
@@ -278,17 +280,15 @@ function [NodePositions, Edges, ReportTable, cpg] =...
     % components (indPC)
     
     if drawPCAView
-        PCAView( NodePositions, Edges, data, cpg,...
+%        PCAView( NodePositions, Edges, data, cpg,...
+%            vglobal(:,indPC(1)), vglobal(:,indPC(2)),... 
+%            explainedVariances(indPC(1))/sum(explainedVariances),...
+%            explainedVariances(indPC(2))/sum(explainedVariances));
+        PCAView( NodePositions, Edges, data, ...
             vglobal(:,indPC(1)), vglobal(:,indPC(2)),... 
             explainedVariances(indPC(1))/sum(explainedVariances),...
             explainedVariances(indPC(2))/sum(explainedVariances));
+        set(gcf,'Position',[678   -58   507   502]);
         set(gcf,'Position',[11   665   612   316]);
-    end
-    
-    %%%%%%%%%%%%%%%%%%%%%%%% Producing metro map layout
-    if drawMetroMaps
-        drawMetroMap(NodePositions,Edges, 'NodeSizes',...
-            cpg.graph.countNumberOfPointsProjected(cpg.dataset) + 1);
-        set(gcf,'Position',[841   239   695   643]);
     end
 end

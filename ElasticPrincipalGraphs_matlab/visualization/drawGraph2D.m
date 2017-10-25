@@ -62,7 +62,7 @@ function drawGraph2D(NodePositions,Edges,varargin)
                 'LineWidth',LineWidth); hold on;
         end
         if showClusterNumbers
-            text(np(i,1),np(i,2),sprintf('%i',i));
+            text(np(i,1),np(i,2),sprintf('%i',i),'FontSize',10);
         end
     end
     

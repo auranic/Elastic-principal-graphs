@@ -1,4 +1,4 @@
-function PCAView( Nodes, Edges, data, cpg, pc1, pc2, pc1FVE, pc2FVE )
+function PCAView( Nodes, Edges, data, pc1, pc2, pc1FVE, pc2FVE )
 %PCAView draw the dots from data and graph in the space of the two selected
 %principal components. Data will be centralized before projection. Mean
 %vector of data will be subtracted from nodes positions.
@@ -8,11 +8,6 @@ function PCAView( Nodes, Edges, data, cpg, pc1, pc2, pc1FVE, pc2FVE )
 %   Edges is k-by-2 matrix of integers. Edges(i,1) and Edges(i,2) specify
 %       numbers of two vertex of i-th edge.
 %   data is n-by-m matrix data (each row of matrix contains one observation).
-%   cpg is vdaoengine.analysis.grammars.ComputePrincipalGraph Java
-%       container object cpg with various service functions. It is output
-%       parameter of computeElPT, computeElasticPrincipalTree, or
-%       computeElasticPrincipalGraph Description of this functions can be
-%       found in ??? 
 %   pc1 is optional argument: 
 %       If it is omitted then 1 is used. 
 %       If it is integer number then it is number of principal component to
@@ -30,8 +25,8 @@ function PCAView( Nodes, Edges, data, cpg, pc1, pc2, pc1FVE, pc2FVE )
 %       If pc2 is number of component then this value is calculated.
 
     % Check input arguments
-    if nargin < 4
-        error('At least Nodes, Edges, data, and cpg must be specified');
+    if nargin < 3
+        error('At least Nodes, Edges, data must be specified');
     end
     % Centralise data
     means = mean(data);
@@ -59,7 +54,7 @@ function PCAView( Nodes, Edges, data, cpg, pc1, pc2, pc1FVE, pc2FVE )
     
     % Calculate principal components if necessary
     if length(pc1) == 1 || length(pc2) == 1
-        [vglobal, uglobal, explainedVariances] = pca(data_centered);
+        [vglobal, uglobal, explainedVariances] = pca(data);
     end
     % Form coordinates to draw
     if length(pc1) == 1
@@ -79,13 +74,48 @@ function PCAView( Nodes, Edges, data, cpg, pc1, pc2, pc1FVE, pc2FVE )
         yNodes = Nodes*pc2(:);
     end
     % Get size of nodes
-    NodeSizes = cpg.graph.countNumberOfPointsProjected(cpg.dataset) + 1;
+    SquaredX = sum(data.^2, 2);
+    MaxBlockSize = 10000;
+    [partition] = PartitionData(data,Nodes,MaxBlockSize,SquaredX);
+    NodeSizes = ones(size(Nodes,1),1);
+     for i=1:size(Nodes,1)
+         NodeSizes(i) = sum(partition==i)+1;
+     end
+    
     % Create figure
     figure;
+    
+    % Draw data
+    %plot(xData,yData,'ko','MarkerSize',2);
+    % Draw data clustered by branches
+    em = MakeUniformElasticMatrix(Edges,1,1);
+    [node_partition, internal_flag, star_centers] = partition_nodes_by_branch(em);
+    inds1 = find(node_partition==0);
+    inds = [];
+    for i=1:size(inds1,1)
+        inds = [inds;find(partition==inds1(i))];
+    end
+    plot(xData(inds),yData(inds),'ko','MarkerSize',2); hold on;
+    for i=1:max(node_partition)
+        labels(i) = {int2str(i)};
+    end
+    [LabelColorMap] = createLabelColorMapList(labels);
+    
+    for i=1:max(node_partition)
+        inds1 = find(node_partition==i);
+        inds = [];
+        for j=1:size(inds1,1)
+            inds = [inds;find(partition==inds1(j))];
+        end
+        color = LabelColorMap(char(int2str(i)));
+        plot(xData(inds),yData(inds),'ko','MarkerSize',2,'MarkerFaceColor',color,'MarkerEdgeColor',color);
+    end
+    
+    
     % Draw tree with specified sizes of nodes
     drawGraph2D([xNodes,yNodes],Edges,'NodeSizes',NodeSizes);
-    % Draw data
-    plot(xData,yData,'ko','MarkerSize',2);
+    
+    
     title('PCA view of principal tree','FontSize',20);
     if pc1FVE>0
         xlabel(sprintf('PCx(%2.2f%%)',pc1FVE*100),'FontSize',20);

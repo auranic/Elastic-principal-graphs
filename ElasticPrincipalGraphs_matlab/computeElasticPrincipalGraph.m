@@ -1,6 +1,10 @@
-function [NodePositions, Edges, ReportTable, cpg] =...
-computeElasticPrincipalGraph(data,NumNodes,ParameterSet,varargin)
+function [NodePositions, Edges, ReportTable] =...
+computeElasticPrincipalGraph(data,NumNodes,varargin)
 %computeElasticPrincipalGraph calculate elastic principal graph. 
+%if grammar parameters 'GrowGrammar' and 'ShrinkGrammar' are not specified then
+%by default the algorithm constructs a principal tree with default elasticity coefficients (Lambda=0.01,Mu=0.1)
+%
+%
 %Theory and some examples of computeElasticPrincipalTree usage can be found
 %in https://github.com/auranic/Elastic-principal-graphs/wiki/Basic-use-of-Elastic-Principal-Graphs-Matlab-package
 %
@@ -72,33 +76,15 @@ computeElasticPrincipalGraph(data,NumNodes,ParameterSet,varargin)
 %           URN2 is UR * nodes^2
 %           URSD is standard deviation of UR???
 %
-%   [NodePositions, Edges, ReportTable, cpg] = 
-%                computeElasticPrincipalTree(data, NumNodes, ParameterSet))
-%       returns also vdaoengine.analysis.grammars.ComputePrincipalGraph
-%           Java container object cpg with various service functions.
-%           Description of this functions can be found in ???
-%
-%   [...] = computeElasticPrincipalTree(data,NumNodes,'PARAM1',val1, ...)
+%   [...] = computeElasticPrincipalGraph(data,NumNodes,'PARAM1',val1, ...)
 %       specifies optional parameter name/value pairs to control the
 %       computation. Parameters are: 
-%       'EP' is coefficient of elastic stretching of the graph. Coefficient
+%       'Lamdba' is coefficient of elastic stretching of the graph. Coefficient
 %           is positive double number. If EP is vector then see Several
 %           epoch strategies below.
-%       'RP' is penalty coefficient for deviation from harmonicity.
+%       'Mu' is penalty coefficient for deviation from harmonicity.
 %           Coefficient is positive double number. If RP is vector then see
 %           Several epoch strategies below.
-%       'ParameterSet' is special function to define parameters of
-%           algorithm. There are tree standard functions:
-%               parametersDefaultPrincipalTree.m
-%               parametersRobustElasticPrincipalTree.m
-%               parametersTwoStageRobustElasticPrincipalTree.m
-%           Default value is parametersDefaultPrincipalTree. Detailed
-%           description of each listed function is included into
-%           corresponding m file. Description of parameters function
-%           development is included into all listed files and to WIKI???
-%           If you use parameterFunction with several epoches (for example,
-%           parametersTwoStageRobustElasticPrincipalTree.m) then see Several
-%           epoch strategies below.
 %       'TrimRadius' is robust or trimming radius. To perform non robust
 %           algorithm specify TrimRadius = 0. If TrimRadius is array then
 %           each value is used for separate epoch. see Several epoch
@@ -114,7 +100,7 @@ computeElasticPrincipalGraph(data,NumNodes,ParameterSet,varargin)
 %                       computeElasticPrincipalTree(data,10,'RP'=0.1,...
 %                       'InitGraph',struct('InitNodes',NodePositions,...
 %                       'InitEdges',Edges));
-%       'Reduce dimension' is indicator of dimensionality reduction by
+%       'Reduce dimension' is used for dimensionality reduction by
 %           principal components. There are tree possible values:
 %               Integer value K. This value must be positive integer being
 %                   not greater than m (number of columns in matrix data).
@@ -129,81 +115,25 @@ computeElasticPrincipalGraph(data,NumNodes,ParameterSet,varargin)
 %                   positive integer being not greater than m (number of 
 %                   columns in matrix data). These values are considered as
 %                   indices of principal components to use.
-%       'Graphs' is integer number which specifies set of graphs to draw:
+%       'Plots' is integer number which specifies set of plots to draw:
 %           1 for "Accuracy/Complexity plot" 
 %           2 for "PCA view on principal tree"
 %           4 for "Metro map layout of the principal tree"
 %           8 for "MSE and Elastic energy plot"
-%           To specify several graphs it is necessary to use sum of listed
+%           To specify several plots it is necessary to use sum of listed
 %           values. For example, for "Accuracy/Complexity plot" and "Metro
 %           map layout of the principal tree" i is necessary to use value
 %           5 = 1 (Accuracy/Complexity) + 4 (Metro map).
 %
-%   Several epoch strategies. This software call epoch fragment of
-%       algorithm which is processed with the same set of patrametres.
-%       There are several ways to create strategy with several epochs. The
-%       simplest is use parameter function
-%       parametersTwoStageRobustElasticPrincipalTree, which provide two
-%       epochs: the first epoch is performed as non-robust and the second
-%       epoch as robust. Sometimes it is very useful initially create
-%       graph with high EP and RP and then decrease this parameters. To do
-%       this without special development of parameter function you can use
-%       four parameters to customise algorithm: 
-%           NumNodes is desired number of nodes.
-%           'EP' is coefficient of elastic stretching of the graph. 
-%           'RP' is penalty coefficient for deviation from harmonicity.
-%           'TrimRadius' is robust or trimming radius.
-%       Final strategy will be formed by algorithm:
-%       Number of epoch in strategy is  
-%           nEpochs = max([length(RP), length(EP), length(NumNodes),...
-%                   length(TrimRadius), length(parameters.epochs)]);
-%           for k = 1:nEpochs
-%               %Create new epoch object.
-%               % if we have corresponding element in parameters.epochs
-%               % then we use it otherwise use the last epoch
-%               if k <= length(parameters.epochs)
-%                   copy parameters.epochs(k);
-%               else
-%                   copy parameters.epochs(end);
-%               end
-%               % Check modification by other parameters
-%               % if we have corresponding element in EP then use it
-%               if k <= length(EP)
-%                   if EP(k)>0
-%                       epoch.EP = EP(k);
-%                   end
-%               end
-%               % if we have corresponding element in RP then use it
-%               if k <= length(RP)
-%                   if RP(k)>0
-%                       epoch.RP = RP(k);
-%                   end
-%               end
-%               % if we have corresponding element in NumNodes then use it
-%               % oterwise use the last element
-%               if k <= length(RP)
-%                   epoch.numberOfIterations = NumNodes(k);
-%               else
-%                   epoch.numberOfIterations = NumNodes(length(NumNodes));
-%               end
-%               % if we have corresponding element in TrimRadius then use it
-%               if k <= length(TrimRadius)
-%                   if TrimRadius(k)>0
-%                       epoch.robust = true;
-%                   end
-%                   epoch.trimradius = TrimRadius(k);
-%               end
-%               % Add new epoch to 
-%               config.epochs.add(epoch);
-%           end
 %
 %
-%
-%Example:  ?????   is not done!
+%Example of use:  
 %   load('test_data/iris/iris.mat');
-%   [NodePositions, Edges, ReportTable, cpg, mml] =...
-%       computeElasticPrincipalTree(table2array(iris(:,2:end)),20);
+%   [NodePositions, Edges, ReportTable] =...
+%       computeElasticPrincipalGraph(table2array(iris(:,2:end)),20);
 %
+
+setallpaths;
 
     % Parse optional argumentes
     reduceDimension = 0;
@@ -211,16 +141,34 @@ computeElasticPrincipalGraph(data,NumNodes,ParameterSet,varargin)
     drawAccuracyComplexity = true;
     drawPCAView = true;
     drawEnergy = true;
+    
+    Lambda = 0.01;
+    Mu = 0.1;
 
     for i=1:2:length(varargin)
         if strcmpi(varargin{i},'ReduceDimension')
             reduceDimension = 1;
             newDimension = varargin{i+1};
-        elseif strcmpi(varargin{i},'Graphs')
+        elseif strcmpi(varargin{i},'Plots')
             tmp = uint8(varargin{i+1});
             drawEnergy = bitand(tmp,8)>0;
             drawPCAView = bitand(tmp,2)>0;
             drawAccuracyComplexity = bitand(tmp,1)>0;
+        elseif strcmpi(varargin{i},'Lambda')
+	    Lambda = varargin{i+1}; 	
+        elseif strcmpi(varargin{i},'Mu')
+	    Mu = varargin{i+1}; 	
+        end
+    end
+    % graph initialization is done after all parameters set
+    graphinitialized = 0;
+    for i=1:2:length(varargin)
+        if strcmpi(varargin{i},'InitGraph')
+        InitStruct = varargin{i+1};
+        np = InitStruct.InitNodes;
+        ed = InitStruct.InitEdges;
+        em = MakeUniformElasticMatrix(ed,Lambda,Mu);
+        graphinitialized = 1;
         end
     end
 
@@ -247,11 +195,16 @@ computeElasticPrincipalGraph(data,NumNodes,ParameterSet,varargin)
         indPC = 1:size(data,2);
     end
 
-	% Calculate principal graph
-    varargin{end + 1} = 'ParameterSet';
-    varargin{end + 1} = ParameterSet;
-    [NodePositions,Edges,ReportTable,cpg] =...
-        computeElPT(data_centered,NumNodes,varargin{:});
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Computing the graph
+
+    if ~graphinitialized
+    [NodePositions,ElasticMatrix,ReportTable] =...
+        ElPrincGraph(data_centered,NumNodes,Lambda,Mu,varargin{:});
+    else
+    [NodePositions,ElasticMatrix,ReportTable] =...
+        ElPrincGraph(data_centered,NumNodes,Lambda,Mu,'InitNodePositions',np,'InitElasticMatrix',em,varargin{:});
+    end
+    Edges = DecodeElasticMatrix(ElasticMatrix);
 
     %%%%%%%%%%%%%%%%%%%%%%%% Preparing the output arguments
     if reduceDimension
@@ -263,13 +216,13 @@ computeElasticPrincipalGraph(data,NumNodes,ParameterSet,varargin)
     %%%%%%%%%%%%%%%%%%%%%%%%  Plots of MSE, elastic energy optimization
     if drawEnergy
         plotMSDEnergyPlot(ReportTable,explainedVariances);
-        set(gcf,'Position',[11   338   612   300]);
+        set(gcf,'Position',[5   102   499   171]);
     end
 
     %%%%%%%%%%%%%%%%%%%%%%%%  Accuracy/Complexity plot
     if drawAccuracyComplexity
         accuracyComplexityPlot(ReportTable);
-        set(gcf,'Position',[11   665   612   316]);
+        set(gcf,'Position',[8   361   499   275]);
     end
     
     %%%%%%%%%%%%%%%%%%%%%%%% Show principal component view on principal
@@ -278,10 +231,10 @@ computeElasticPrincipalGraph(data,NumNodes,ParameterSet,varargin)
     % components (indPC)
     
     if drawPCAView
-        PCAView( NodePositions, Edges, data, cpg,...
+        PCAView( NodePositions, Edges, data,...
             vglobal(:,indPC(1)), vglobal(:,indPC(2)),... 
             explainedVariances(indPC(1))/sum(explainedVariances),...
             explainedVariances(indPC(2))/sum(explainedVariances));
-        set(gcf,'Position',[11   665   612   316]);
+        set(gcf,'Position',[511   156   510   413]);
     end
 end

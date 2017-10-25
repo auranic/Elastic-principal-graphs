@@ -1,22 +1,23 @@
 # Elastic principal graphs
-Matlab implementation of the interface to the  Elastic Principal Graphs method
+Matlab implementation of Elastic Principal Graphs (ElPiGraph) method
 
 Principal graphs are graphs that are embedded into a high-dimensional space and minimize the distance to the data points, while maximizing some regular properties.
 
 Elastic principal graphs are based on minimization of the energy potential containing three parts :
 
-### U = MSE + ep UE + rp UR
+### U = MSE + \lambda UE + \mu UR
 
-where MSE is the mean squared error of data approximation, UR - is the sum of squared edge lengths, UR is a term minimizing the deviation of the principal graph embedment from harmonicity (generalization of linearity), ep,rp are coefficients of regularization.
+where MSE is the mean squared error of data approximation, UR - is the sum of squared edge lengths, UR is a term minimizing the deviation of the principal graph embedment from harmonicity (generalization of linearity), \lambda,\mu are coefficients of regularization.
 
 The structure of the graph is computed by an optimal application of a sequence of graph transformations, using operations from predefined graph grammar.
 The simplest graph grammar "Bisect an edge", "Add a node to a node" leads to construction of a principal tree.
 
-Read [wiki](https://github.com/auranic/Elastic-principal-graphs/wiki) of this repository for much more detailed information on the algorithm.
+Read [wiki](https://github.com/auranic/Elastic-principal-graphs/wiki) of this repository for more detailed information on the algorithm
+and examples of its application.
 
 Go to [R implementation of elastic principal graphs interface](https://github.com/Albluca/rpgraph) created by [Luca Albergante](https://github.com/Albluca).
 
-For more details of elastic principal graph theory consult the bibliography:
+For more details of elastic principal graph theory read:
 
 1) Gorban A.N., Zinovyev A. 2010. Principal manifolds and graphs in practice: from molecular biology to dynamical systems. Int J Neural Syst 20(3):219-32.
 
@@ -27,3 +28,26 @@ For more details of elastic principal graph theory consult the bibliography:
 4) Gorban AN, Sumner NR, Zinovyev AY. Topological grammars for data approximation. Applied Mathematics Letters 20 (4), 382-386.
 
 5) Gorban A., Zinovyev A. Elastic Principal Graphs and Manifolds and their Practical Applications. 2005. Computing 75,359 -379
+
+# Organization of the code
+
+Folders:
+
+core_algorithm 		- contains the core MATLAB code of the algorithm (self-contained)
+core_algorithm_java	- old MATLAB wrapper of the Java code for ElPiGraph
+docs			- some documentation on the method and the code
+examples		- some example applications of the method
+simulations		- code generating synthetic datasets (e.g., with known branching topology)
+test_code		- testing critical parts of the code (not needed for the package use)
+test_data		- example datasets 
+utils			- utility functions for manipulating data and the graph (e.g., projection function)
+visualization		- utility functions used for visualizing the results of the method application (such as applying metro map layout of the principal tree)
+
+Functions in the root folder:
+
+computeElasticPrincipalCircle.m		- computes closed elastic principal curve with a given number of nodes
+computeElasticPrincipalCurve.m          - computes elastic principal curve with a given number of nodes
+computeElasticPrincipalGraph.m		- computes elastic principal graph for a dataset with a given number of nodes and defined set of grammars (principal tree grammar by default)
+setallpaths.m				- set all paths to other folders (needed if some functions are called directly, bypassing the root folder "computeElasticPrincipalXXX.m" functions)
+
+ 

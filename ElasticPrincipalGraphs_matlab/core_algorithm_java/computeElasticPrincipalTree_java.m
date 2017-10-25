@@ -1,11 +1,12 @@
-function [NodePositions, Edges, ReportTable, cpg] = ...
-                                    computeElPT(data, NumNodes, varargin)
-% computeElPT is service function to calculate principal graph. It is
-% preferable to use functions computeElasticPrincipalTree,
-% computeElasticPrincipalGraph or makeAnimation.
+function [NodePositions, Edges, ReportTable, cpg] =...
+    computeElasticPrincipalTree_java(data, NumNodes, varargin)
+%computeElasticPrincipalTree calculate elastic principal tree which is one
+%of the simplest and very useful type of principal graphs.
+%Theory and some examples of computeElasticPrincipalTree usage can be found
+%in https://github.com/auranic/Elastic-principal-graphs/wiki/Basic-use-of-Elastic-Principal-Graphs-Matlab-package
 %
 %Usage
-%   [NodePositions, Edges] = computeElPT(data,NumNodes)
+%   [NodePositions, Edges] = computeElasticPrincipalTree(data,NumNodes)
 %   returns 
 %       NodePositions is k-by-m matrix of coordinates of k nodes in m
 %           dimensional space for n-by-m matrix data (each row of matrix
@@ -19,8 +20,29 @@ function [NodePositions, Edges, ReportTable, cpg] = ...
 %           number of nodes in calculated graph is not greater than
 %           sum(NumNodes). For more details see Several epoch strategies
 %           below.
+%   By default computeElasticPrincipalTree also prepare four figures:
+%       "Accuracy/Complexity plot" shows the dependence of the normalized
+%           geometrical complexity on the number of nodes. This graph is
+%           very useful to find optimal number of nodes. You can produce
+%           this graph later by function
+%           accuracyComplexityPlot(ReportTable) 
+%       "PCA view on principal tree" shows the projection of a principal
+%           graph onto the first two principal components of the data. In
+%           other words this graph is visualisation of data and graph. You
+%           can produce this graph later by function PCAView.
+%       "Metro map layout of the principal tree" presents 'topological
+%           skeleton' of graph. In the PCA view of principal tree some
+%           nodes can be hidden by other nodes but in metro map all nodes
+%           always visible. You can produce this graph later by function
+%           drawMetroMap(NodePositions,Edges, 'NodeSizes',...
+%               cpg.graph.countNumberOfPointsProjected(cpg.dataset) + 1); 
+%       "MSE and Elastic energy plot" shows the dynamics of data
+%           approximation and elastic energy term during principal tree
+%           construction. You can produce this graph later by function
+%           plotMSDEnergyPlot(ReportTable).
 %
-%   [NodePositions, Edges, ReportTable] = computeElPT(data,NumNodes)
+%   [NodePositions, Edges, ReportTable] =
+%                              computeElasticPrincipalTree(data,NumNodes)
 %       returns also ReportTable. Report table is table with 17 columns:
 %           STEP is number of iteration
 %           BARCODE is barcode in form ...S4|S3||N, where N is number of
@@ -48,7 +70,8 @@ function [NodePositions, Edges, ReportTable, cpg] = ...
 %           URN2 is UR * nodes^2
 %           URSD is standard deviation of UR???
 %
-%   [NodePositions, Edges, ReportTable, cpg] = computeElPT(data,NumNodes)
+%   [NodePositions, Edges, ReportTable, cpg] = 
+%                               computeElasticPrincipalTree(data,NumNodes)
 %       returns also vdaoengine.analysis.grammars.ComputePrincipalGraph
 %           Java container object cpg with various service functions.
 %           Description of this functions can be found in ???
@@ -89,6 +112,30 @@ function [NodePositions, Edges, ReportTable, cpg] = ...
 %                       computeElasticPrincipalTree(data,10,'RP'=0.1,...
 %                       'InitGraph',struct('InitNodes',NodePositions,...
 %                       'InitEdges',Edges));
+%       'Reduce dimension' is indicator of dimensionality reduction by
+%           principal components. There are tree possible values:
+%               Integer value K. This value must be positive integer being
+%                   not greater than m (number of columns in matrix data).
+%                   In this case the first K principal components will be
+%                   used.
+%               Array with two integer values [K1, K2].  These value must
+%                   be positive integer being not greater than m (number of
+%                   columns in matrix data) and inequality K1 <= K2 has to
+%                   be held. In this case principal components from K1 to
+%                   K2 inclusive will be used.
+%               Array with more than 2 elements. All elements  must be
+%                   positive integer being not greater than m (number of 
+%                   columns in matrix data). These values are considered as
+%                   indices of principal components to use.
+%       'Graphs' is integer number which specifies set of graphs to draw:
+%           1 for "Accuracy/Complexity plot" 
+%           2 for "PCA view on principal tree"
+%           4 for "Metro map layout of the principal tree"
+%           8 for "MSE and Elastic energy plot"
+%           To specify several graphs it is necessary to use sum of listed
+%           values. For example, for "Accuracy/Complexity plot" and "Metro
+%           map layout of the principal tree" i is necessary to use value
+%           5 = 1 (Accuracy/Complexity) + 4 (Metro map).
 %
 %   Several epoch strategies. This software call epoch fragment of
 %       algorithm which is processed with the same set of patrametres.
@@ -148,124 +195,102 @@ function [NodePositions, Edges, ReportTable, cpg] = ...
 %               config.epochs.add(epoch);
 %           end
 %
-%Examples can be found in the following functions:
-%       computeElasticPrincipalTree,
-%       computeElasticPrincipalGraph,
-%       makeAnimation.
 %
-                                
-    % Elasticity module stretching
-    EP = -1;
-    % Elasticity module bending
-    RP = -1;
-    % Trimming radius
-    TrimRadius = -1;
-    % Graph initialisation
-    initGraph = 0;
-    % Function to handle parameters
-    parameterfunction_handle = @parametersDefaultPrincipalTree;
-    % Parse input parameters
+%
+%Example:
+%   load('test_data/iris/iris.mat');
+%   [NodePositions, Edges, ReportTable, cpg, mml] =...
+%       computeElasticPrincipalTree(table2array(iris(:,2:end)),20);
+%
+
+setallpaths;
+
+    % Parse optional argumentes
+    reduceDimension = 0;
+    newDimension = -1;
+    drawAccuracyComplexity = true;
+    drawPCAView = true;
+    drawMetroMaps = true;
+    drawEnergy = true;
+
     for i=1:2:length(varargin)
-        if strcmpi(varargin{i},'EP')
-            EP = varargin{i+1};
-        elseif strcmpi(varargin{i},'RP')
-            RP = varargin{i+1};
-        elseif strcmpi(varargin{i},'ParameterSet')
-            parameterfunction_handle = varargin{i+1};
-        elseif strcmpi(varargin{i},'TrimRadius')
-            TrimRadius = varargin{i+1};
-        elseif strcmpi(varargin{i},'InitGraph')
-            initGraph = 1;
-            tmp = varargin{i+1};
-            InitNodePositions = tmp.InitNodes
-            InitEdges = tmp.InitEdges;
+        if strcmpi(varargin{i},'ReduceDimension')
+            reduceDimension = 1;
+            newDimension = varargin{i+1};
+        elseif strcmpi(varargin{i},'Graphs')
+            tmp = uint8(varargin{i+1});
+            drawEnergy = bitand(tmp,8)>0;
+            drawMetroMaps = bitand(tmp,4)>0;
+            drawPCAView = bitand(tmp,2)>0;
+            drawAccuracyComplexity = bitand(tmp,1)>0;
         end
     end
 
-    % interface to java calculator
-    javaclasspath({'VDAOEngine.jar'});
+    mv = mean(data);
+    data_centered = bsxfun(@minus,data,mv);
 
-    % Get parameters from parameter function;
-    parameters = parameterfunction_handle();
-    % Form configuration object
-    config = vdaoengine.analysis.grammars.ConfigFile;
-    % Epecify parameters of configuration
-    config.algtype = parameters.algtype;
-    config.stretchInitCoeffs(1) = parameters.initstretch1;
-    config.initStrategy = parameters.initalgorithm;
-    % Work with several epochs in configuration
-    % Define number of epochs
-    nEpochs = max([length(RP),length(EP), length(NumNodes),...
-        length(TrimRadius), length(parameters.epochs)]);
-    for k = 1:nEpochs
-        % Create new java epoch and fill it.
-        epoch = vdaoengine.analysis.elmap.ElmapAlgorithmEpoch;
-        % if we have corresponding element in parameters.epochs then we use
-        % it otherwise use the last epoch
-        if k <= length(parameters.epochs)
-            i = k;
+    [vglobal, uglobal, explainedVariances] = pca(data_centered);
+    if reduceDimension
+        % Form index of used PCs
+        tmp = length(newDimension);
+        if tmp == 1
+            indPC = 1:newDimension(1);
+        elseif tmp == 2
+            indPC = newDimension(1):newDimension(2);
         else
-            i = length(parameters.epochs);
+            indPC = newDimension;
         end
-        epoch.grammarType = parameters.epochs(i).grammartype;
-        epoch.EP = parameters.epochs(i).ep;
-        epoch.RP = parameters.epochs(i).rp;
-        epoch.maxNumberOfIterationsForSLAU = parameters.epochs(i).numiterSLAU;
-        epoch.epsConvergence = parameters.epochs(i).eps;
-        epoch.epsConvergenceSLAU = parameters.epochs(i).epsSLAU;
-        if isfield(parameters.epochs(i),'robust')
-            epoch.robust = parameters.epochs(i).robust;
-        end
-        if isfield(parameters.epochs(i),'trimradius')
-            epoch.trimradius = parameters.epochs(i).trimradius;
-        end
-        % Check modification by other parameters
-        % if we have corresponding element in EP then use it
-        if k <= length(EP)
-            if EP(k)>0
-                epoch.EP = EP(k);
-            end
-        end
-        % if we have corresponding element in RP then use it
-        if k <= length(RP)
-            if RP(k)>0
-                epoch.RP = RP(k);
-            end
-        end
-        % if we have corresponding element in NumNodes then use it oterwise
-        % use the last element
-        if k <= length(RP)
-            epoch.numberOfIterations = NumNodes(k);
-        else
-            epoch.numberOfIterations = NumNodes(length(NumNodes));
-        end
-        % if we have corresponding element in TrimRadius then use it
-        if k <= length(TrimRadius)
-            if TrimRadius(k)>0
-                epoch.robust = true;
-            end
-            epoch.trimradius = TrimRadius(k);
-        end
-        % Add new epoch to 
-        config.epochs.add(epoch);
+        % Calculate variance explained by seleced components.
+        perc = sum(explainedVariances(indPC))/sum(explainedVariances)*100;
+        display(sprintf('Variance retained in %3.0f dimensions: %2.2f%%',...
+            (length(indPC)),perc));
+        data_centered = uglobal(:,indPC);
+    else
+        indPC = 1:size(data,2);
     end
-    % Create object for calculation and set data and configuretion
-    cpg = vdaoengine.analysis.grammars.ComputePrincipalGraph;
-    cpg.config = config;
-    cpg.setDataSetAsMassif(data);
+
+	% Calculate principal tree
+    [NodePositions, Edges, ReportTable, cpg] = ...
+        computeElPT(data_centered,NumNodes,varargin{:});
+
+    %%%%%%%%%%%%%%%%%%%%%%%% Preparing the output arguments
     
-    if initGraph > 0
-        cpg.config.initStrategy = -1;
-        cpg.setPrimitiveGraphByNodesAndEdges(InitNodePositions,InitEdges);
+    if reduceDimension
+        %Project nodes back into the initial, non-reduced space
+        NodePositions = NodePositions*vglobal(:,indPC)';
     end
-    % Calculations
-    report = cpg.compute();
-    % Convert report to usable format
-    fn = tempname;
-    fid = fopen(fn,'w');
-    fprintf(fid, '%s', char(report));
-    fclose(fid);
-    ReportTable = readtable(fn,'Delimiter','\t');
-    NodePositions = cpg.graph.getNodePositions();
-    Edges = cpg.graph.getEdgeTable();
+    NodePositions = bsxfun(@plus,NodePositions,mv);
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%  Plots of MSE, elastic energy optimization
+    if drawEnergy
+        plotMSDEnergyPlot(ReportTable,explainedVariances);
+        set(gcf,'Position',[12   421   470   209]);
+    end
+
+    %%%%%%%%%%%%%%%%%%%%%%%%  Accuracy/Complexity plot
+    if drawAccuracyComplexity
+        accuracyComplexityPlot(ReportTable);
+        set(gcf,'Position',[12   119   472   212]);
+    end
+    
+    %%%%%%%%%%%%%%%%%%%%%%%% Show principal component view on principal
+    %%%%%%%%%%%%%%%%%%%%%%%% tree and the data
+    % This method use two the first selected component in the list of used
+    % components (indPC)
+    
+    if drawPCAView
+        PCAView( NodePositions, Edges, data, ...
+            vglobal(:,indPC(1)), vglobal(:,indPC(2)),... 
+            explainedVariances(indPC(1))/sum(explainedVariances),...
+            explainedVariances(indPC(2))/sum(explainedVariances));
+        set(gcf,'Position',[678   -58   507   502]);
+    end
+    
+    %%%%%%%%%%%%%%%%%%%%%%%% Producing metro map layout
+    if drawMetroMaps
+        drawMetroMap(NodePositions,Edges, 'NodeSizes',...
+            cpg.graph.countNumberOfPointsProjected(cpg.dataset) + 1);
+        set(gcf,'Position',[1189         -56         509         498]);
+    end
 end
