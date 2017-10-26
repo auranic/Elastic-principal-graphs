@@ -6,7 +6,7 @@ function [graph] = makeGraph(NodePositions,Edges)
 %Return object of vdaoengine.analysis.grammars.Graph class
 
     % Connection with Java to calculate
-    javaclasspath({'VDAOEngine.jar'});
+    javaclasspath({'.\core_algorithm_java\VDAOEngine.jar'});
     % Create graph
     graph = vdaoengine.analysis.grammars.Graph;
     % Initialise graph and extract it structure 

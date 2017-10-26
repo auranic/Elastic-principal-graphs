@@ -33,7 +33,7 @@ switch type
     case 'removenode',  [NodePositionArray, ElasticMatrices, NodeIndicesArray] = RemoveNode(NodePositions,ElasticMatrix);
     case 'bisectedge',  [NodePositionArray, ElasticMatrices, NodeIndicesArray] = BisectEdge(NodePositions,ElasticMatrix);
     case 'shrinkedge',  [NodePositionArray, ElasticMatrices, NodeIndicesArray] = ShrinkEdge(NodePositions,ElasticMatrix);
-    otherwise display(sprintf('ERROR: operation %s is node defined',type)); 
+    otherwise display(sprintf('ERROR: operation %s is not defined',type)); 
 end
 
 

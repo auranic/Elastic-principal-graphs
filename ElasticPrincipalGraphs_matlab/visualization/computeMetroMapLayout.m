@@ -1,6 +1,6 @@
 function [NodePositions2D,mml] = computeMetroMapLayout(NodePositions,Edges)
 
-javaclasspath({'VDAOEngine.jar'});
+javaclasspath({'.\core_algorithm_java\VDAOEngine.jar'});
 
 mml = vdaoengine.analysis.grammars.MetroMapLayout;
 

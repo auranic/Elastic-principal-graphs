@@ -1,4 +1,5 @@
-function [NodePositions,ElasticMatrix,ReportTable] = ElPrincGraph(X, NumNodes, Lambda, Mu, varargin)
+function [NodePositions, ElasticMatrix, ReportTable]...
+    = ElPrincGraph(X, NumNodes, Lambda, Mu, varargin)
 % This function constructs a principal tree with NumNodes for a dataset X,
 % with elasticities for edges Lamda and Elasticities for stars Mu
 %
@@ -6,13 +7,13 @@ function [NodePositions,ElasticMatrix,ReportTable] = ElPrincGraph(X, NumNodes, L
 % 'InitNodePositions' - define the initial tree configuration
 % 'InitElasticMatrix' - define the initial tree configuration
 
-np=[];
-em=[];
-verbose = 1;
+    np=[];
+    em=[];
+    verbose = 1;
 
-% default grammar - for a principal tree with pruning
-growGrammars = [{'bisectedge';'addnode2node'},{'bisectedge';'addnode2node'}];
-shrinkGrammars = [{'shrinkedge';'removenode'}];
+    % default grammar - for a principal tree with pruning
+    growGrammars = [{'bisectedge';'addnode2node'},{'bisectedge';'addnode2node'}];
+    shrinkGrammars = [{'shrinkedge';'removenode'}];
 
 
     for i=1:2:length(varargin)

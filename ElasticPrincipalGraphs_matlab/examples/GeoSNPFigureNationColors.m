@@ -1,8 +1,8 @@
-LabelColorMap = createLabelColorMap('..\test_data\hgdp_sample_ordered_classes.txt',2);
+LabelColorMap = createLabelColorMap('..\test_data\HGDP_SNP\hgdp_sample_ordered_classes.txt',2);
 
-labels = getColumnOfTable('..\test_data\hgdp_sample_ordered_classes.txt',2);
-labelsRegion = getColumnOfTable('..\test_data\hgdp_sample_ordered_classes.txt',3);
-data = load('..\test_data\hgdp_PC3.data');
+labels = getColumnOfTable('..\test_data\HGDP_SNP\hgdp_sample_ordered_classes.txt',2);
+labelsRegion = getColumnOfTable('..\test_data\HGDP_SNP\hgdp_sample_ordered_classes.txt',3);
+data = load('..\test_data\HGDP_SNP\hgdp_PC3.data');
 
 for i=1:size(data,1)
     region = char(labelsRegion(i));
@@ -72,6 +72,7 @@ for i=1:size(data,1)
     end
 end
 
-figure; drawPieCharts(nodesMM,TaxonMap,labels,LabelColorMap,'ScaleCharts',1); drawGraph2D(nodesMM,Edges,'ShowClusterNumbers',0); 
+figure; drawPieChartsProc(nodesMM,TaxonMap,labels,LabelColorMap,'ScaleCharts',1); 
+drawGraph2D(nodesMM,Edges,'ShowClusterNumbers',0); 
 %xlim([-2 -0.5]); ylim([-0.35 0.7]); 
 axis off;

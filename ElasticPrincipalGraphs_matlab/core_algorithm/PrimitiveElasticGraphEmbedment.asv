@@ -184,6 +184,7 @@ tic;
         FixedSubSet(NodeSubSet) = [];
         % Define set of points to use
         LocalInds = ~ismember(partition, FixedSubSet);
+
         % Extract corresponding part of arrays
         XLocal = X(LocalInds,:);
         PointWeightsLocal = PointWeights(LocalInds,:);
