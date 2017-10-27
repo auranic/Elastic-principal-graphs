@@ -5,7 +5,7 @@ function [partition, dists] = ...
 %%%%%%%%%%%%%%%%%%%%%%%
 %
 %Inputs:
-%   X is n-by-m matrix of datapints with one data point per row. n is
+%   X is n-by-m matrix of datapoints with one data point per row. n is
 %       number of data points and m is dimension of data space.
 %   NodePositions is k-by-m matrix of embedded coordinates of graph nodes,
 %       where k is number of nodes and m is dimension of data space.

@@ -302,7 +302,33 @@ end
 
 function [NodeClusterCenters, NodeClusterRelativeSize] =...
     ComputeWeightedAverage(X, partition, PointWeights, NumberOfNodes)
-%ComputeWeightedAverage calculate NodeClausterCentres as weighted averages
+% %ComputeWeightedAverage calculate NodeClausterCentres as weighted averages
+% %of points from matrix X.
+% %
+% %Inputs
+% %   X is n-by-m matrix of data points where each row corresponds to one
+% %       observation.
+% %   partition is n-by-1 (column) vector of node numbers. This vector
+% %       associate data points with Nodes.
+% %   PointWeights is n-by-m (column) vector of point weights.
+% %   NumberOfNodes is number of nodes to calculate means.
+% %
+% %Important! if there is no point associated with node then coordinates of
+% %this node centroid are zero.
+% %
+%      NodeClusterCenters = zeros(NumberOfNodes,size(X,2));
+%      NodeClusterRelativeSize = zeros(NumberOfNodes,1);
+%      TotalWeight = sum(PointWeights);
+%      for i=1:NumberOfNodes
+%          inds = find(partition==i);
+%          if(size(inds,1)>0)
+%              tmp = sum(PointWeights(inds));
+%              NodeClusterCenters(i,:) = sum(bsxfun(@times,X(inds,:),PointWeights(inds)),1)/tmp;
+%              NodeClusterRelativeSize(i) = tmp/TotalWeight;
+%          end
+%      end
+     
+%ComputeWeightedAverage calculate NodeClusterCentres as weighted averages
 %of points from matrix X.
 %
 %Inputs
@@ -310,23 +336,29 @@ function [NodeClusterCenters, NodeClusterRelativeSize] =...
 %       observation.
 %   partition is n-by-1 (column) vector of node numbers. This vector
 %       associate data points with Nodes.
-%   PointWeights is n-by-m (column) vector of point weights.
+%   PointWeights is n-by-1 (column) vector of point weights.
 %   NumberOfNodes is number of nodes to calculate means.
 %
 %Important! if there is no point associated with node then coordinates of
 %this node centroid are zero.
 %
-     NodeClusterCenters = zeros(NumberOfNodes,size(X,2));
-     NodeClusterRelativeSize = zeros(NumberOfNodes,1);
-     TotalWeight = sum(PointWeights);
-     for i=1:NumberOfNodes
-         inds = find(partition==i);
-         if(size(inds,1)>0)
-             tmp = sum(PointWeights(inds));
-             NodeClusterCenters(i,:) = sum(bsxfun(@times,X(inds,:),PointWeights(inds)),1)/tmp;
-             NodeClusterRelativeSize(i) = tmp/TotalWeight;
-         end
-     end
+    % This recalcultion can be removed from this position
+    X = bsxfun(@times, X, PointWeights);
+    % Auxiliary calculations
+    M = size(X,2);
+    part = partition + 1;
+    % Calculate total weights
+    TotalWeight = sum(PointWeights);
+    % Calculate weights for Relative size
+    tmp = accumarray(part, PointWeights, [NumberOfNodes + 1, 1]);
+    NodeClusterRelativeSize = tmp(2:end) / TotalWeight;
+    
+    NodeClusterCenters = zeros(NumberOfNodes + 1,size(X, 2));
+    for k=1:M
+        NodeClusterCenters(:, k) = accumarray(part,X(:, k), [NumberOfNodes+1, 1]) ./ tmp;
+    end
+    NodeClusterCenters = NodeClusterCenters(2:end,:);
+     
 end
 
 function NewNodePositions =...
@@ -364,7 +396,8 @@ function [NewNodePositions] =...
     
     SLAUMatrixLocal = SLAUMatrix(NodeSubSet,NodeSubSet);
     
-    ComplementNodeSet = fast_setdiff(1:NumberOfNodes,NodeSubSet);
+    ComplementNodeSet = 1:NumberOfNodes;
+    ComplementNodeSet(NodeSubSet) = [];
     
     ComplementSLAUMatrix = SLAUMatrix(NodeSubSet,ComplementNodeSet);
     
@@ -392,10 +425,10 @@ function [diff] = ComputeRelativeChangeOfNodePositions(NodePositions,NewNodePosi
     %diff = mean(diff);
 end
 
-%% faster alternative for setdiff
-function [Z] = fast_setdiff(X,Y)
-  check = false(1, max(max(X), max(Y)));
-  check(X) = true;
-  check(Y) = false;
-  Z = X(check(X));  
-end
+% %% faster alternative for setdiff
+% function [Z] = fast_setdiff(X,Y)
+%   check = false(1, max(max(X), max(Y)));
+%   check(X) = true;
+%   check(Y) = false;
+%   Z = X(check(X));  
+% end

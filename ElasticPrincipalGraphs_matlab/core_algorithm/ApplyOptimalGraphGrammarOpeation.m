@@ -61,7 +61,7 @@ for i=1:size(ElasticMatricesAll,3)
             sd1 = GetNeighbourhoodOnTheGraph(ElasticMatrix,sd,1);
             sd = fast_setdiff1(sd1,sd);
         end
-        LocalInfo.NodeSubSet = GetNeighbourhoodOnTheGraph(ElasticMatricesAll(:,:,i),sd,RadiusOfLocalSearch);
+        LocalInfo.Nodes = GetNeighbourhoodOnTheGraph(ElasticMatricesAll(:,:,i),sd,RadiusOfLocalSearch);
         [np,ElasticEnergy] = PrimitiveElasticGraphEmbedment(X, NodePositionArrayAll(:,:,i), ElasticMatricesAll(:,:,i),'verbose',0,'SquaredX',SquaredX,'Local',LocalInfo);
     else
         [np,ElasticEnergy] = PrimitiveElasticGraphEmbedment(X, NodePositionArrayAll(:,:,i), ElasticMatricesAll(:,:,i),'verbose',0,'SquaredX',SquaredX);
