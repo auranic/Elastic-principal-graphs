@@ -21,15 +21,13 @@ Go to [R implementation of elastic principal graphs interface](https://github.co
 
 For more details of elastic principal graph theory read:
 
-1) Gorban A.N., Zinovyev A. 2010. Principal manifolds and graphs in practice: from molecular biology to dynamical systems. Int J Neural Syst 20(3):219-32.
+[Gorban AN and Zinovyev AY. Principal Graphs and Manifolds. In Handbook of Research on Machine Learning Applications and Trends: Algorithms, Methods and Techniques (eds. Olivas E.S., Guererro J.D.M., Sober M.M., Benedito J.R.M., Lopes A.J.S.). Information Science Reference, September 4, 2009.](https://arxiv.org/ftp/arxiv/papers/0809/0809.0490.pdf)
 
-2) Gorban AN and Zinovyev AY. Principal Graphs and Manifolds. In Handbook of Research on Machine Learning Applications and Trends: Algorithms, Methods and Techniques (eds. Olivas E.S., Guererro J.D.M., Sober M.M., Benedito J.R.M., Lopes A.J.S.). Information Science Reference, September 4, 2009.
+[Gorban A., Sumner N., Zinovyev A. Topological grammars for data approximation. 2007. Applied Mathematics Letters 20(4), 382-386.](http://arxiv.org/pdf/cs/0603090v2.pdf)
 
-3) Gorban A, Sumner N, Zinovyev A. Beyond The Concept of Manifolds: Principal Trees, Metro Maps, and Elastic Cubic Complexes. 2008. Lecture Notes in Computational Science and Engeneering 58: 223-240.
+[Gorban A., Mirkes E., Zinovyev A. Robust principal graphs for data approximation. Archives of Data Science 2(1):1:16, 2017.](href="http://arxiv.org/abs/1603.06828)
 
-4) Gorban AN, Sumner NR, Zinovyev AY. Topological grammars for data approximation. Applied Mathematics Letters 20 (4), 382-386.
-
-5) Gorban A., Zinovyev A. Elastic Principal Graphs and Manifolds and their Practical Applications. 2005. Computing 75,359 -379
+[Gorban A.N., Zinovyev A. 2010. Principal manifolds and graphs in practice: from molecular biology to dynamical systems. Int J Neural Syst 20(3):219-32.](href="http://arxiv.org/pdf/1001.1122.pdf)
 
 # Organization of the code
 
