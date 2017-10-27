@@ -75,26 +75,30 @@ if verbose
     display(sprintf('BARCODE\tENERGY\tNNODES\tNEDGES\tNRIBS\tNSTARS\tNRAYS\tNRAYS2\tMSE MSEP\tFVE\tFVEP\tUE\tUR\tURN\tURN2\tURSD'));
 end
 
+CurrentNumberOfNodes = size(np,1);
+
 BARCODES = {''}; 
-ENERGY = zeros(NumNodes-2,1); 
-NNODES = zeros(NumNodes-2,1); 
-NEDGES = zeros(NumNodes-2,1); 
-NRIBS = zeros(NumNodes-2,1); 
-NSTARS = zeros(NumNodes-2,1); 
-NRAYS = zeros(NumNodes-2,1); 
-NRAYS2 = zeros(NumNodes-2,1); 
-MSE = zeros(NumNodes-2,1); 
-MSEP = zeros(NumNodes-2,1); 
-FVE = zeros(NumNodes-2,1); 
-FVEP = zeros(NumNodes-2,1); 
-UE = zeros(NumNodes-2,1); 
-UR = zeros(NumNodes-2,1); 
-URN = zeros(NumNodes-2,1); 
-URN2 = zeros(NumNodes-2,1); 
-URSD = zeros(NumNodes-2,1); 
+ENERGY = zeros(NumNodes-CurrentNumberOfNodes,1); 
+NNODES = zeros(NumNodes-CurrentNumberOfNodes,1); 
+NEDGES = zeros(NumNodes-CurrentNumberOfNodes,1); 
+NRIBS = zeros(NumNodes-CurrentNumberOfNodes,1); 
+NSTARS = zeros(NumNodes-CurrentNumberOfNodes,1); 
+NRAYS = zeros(NumNodes-CurrentNumberOfNodes,1); 
+NRAYS2 = zeros(NumNodes-CurrentNumberOfNodes,1); 
+MSE = zeros(NumNodes-CurrentNumberOfNodes,1); 
+MSEP = zeros(NumNodes-CurrentNumberOfNodes,1); 
+FVE = zeros(NumNodes-CurrentNumberOfNodes,1); 
+FVEP = zeros(NumNodes-CurrentNumberOfNodes,1); 
+UE = zeros(NumNodes-CurrentNumberOfNodes,1); 
+UR = zeros(NumNodes-CurrentNumberOfNodes,1); 
+URN = zeros(NumNodes-CurrentNumberOfNodes,1); 
+URN2 = zeros(NumNodes-CurrentNumberOfNodes,1); 
+URSD = zeros(NumNodes-CurrentNumberOfNodes,1); 
 
 % now we grow the graph up to NumNodes
-for i=1:NumNodes-2
+i=1;
+while(size(np,1)<NumNodes)
+%for i=1:NumNodes-2
     for k=1:size(growGrammars,2)
         [np,em] = ApplyOptimalGraphGrammarOpeation(X,np,em,growGrammars(:,k),varargin{:});
         if i==3 % this is needed to erase the star elasticity coefficient which was initially assigned to both leaf nodes,
@@ -114,13 +118,14 @@ for i=1:NumNodes-2
     if verbose
         display(sprintf('%s',reportString));
     end
-    
+    i=i+1;
 end
 
 NodePositions = np;
 ElasticMatrix = em;
 
-    BARCODE = char(BARCODES);
+BARCODE = char(BARCODES);
+
     ReportTable = table(BARCODE,ENERGY,NNODES,NEDGES,NRIBS,NSTARS,NRAYS,NRAYS2,MSE,MSEP,FVE,FVEP,UE,UR,URN,URN2,URSD);
     
 end
