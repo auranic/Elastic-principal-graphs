@@ -9,7 +9,7 @@ Elastic principal graphs are based on minimization of the energy potential conta
 
 ### U = MSE + \lambda UE + \mu UR
 
-where MSE is the mean squared error of data approximation, UR - is the sum of squared edge lengths, UR is a term minimizing the deviation of the principal graph embedment from harmonicity (generalization of linearity), \lambda,\mu are coefficients of regularization.
+where MSE is the mean squared error of data approximation, UR - is the sum of squared edge lengths, UR is a term minimizing the deviation of the principal graph embedment from harmonicity (generalization of linearity), \lambda ,\mu  are coefficients of regularization.
 
 The structure of the graph is computed by an optimal application of a sequence of graph transformations, using operations from predefined graph grammar.
 The simplest graph grammar "Bisect an edge", "Add a node to a node" leads to construction of a principal tree.
