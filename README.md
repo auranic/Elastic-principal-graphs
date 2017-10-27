@@ -1,5 +1,7 @@
 # Elastic principal graphs
-Matlab implementation of Elastic Principal Graphs (ElPiGraph) method. For the basic description of ElPiGraph, read https://github.com/auranic/Elastic-principal-graphs/blob/master/ElPiGraph_Methods.pdf. 
+Matlab implementation of Elastic Principal Graphs (ElPiGraph) method. 
+
+For the basic self-contained formal description of ElPiGraph, read https://github.com/auranic/Elastic-principal-graphs/blob/master/ElPiGraph_Methods.pdf. 
 
 Principal graphs are graphs that are embedded into a high-dimensional space and minimize the distance to the data points, while maximizing some regular properties.
 
