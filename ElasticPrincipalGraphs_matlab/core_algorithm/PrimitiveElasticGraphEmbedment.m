@@ -33,7 +33,7 @@ function [EmbeddedNodePositions, ElasticEnergy, partition, MSE,EP,RP]...
     % Set profile = 1 for debug purposes
     profile = 0;
 
-    if profile == 1
+   if profile == 1
         global numberOfLocalPoints;
         global numberOfFits;
         global numberOfGraphNodes;
@@ -41,7 +41,7 @@ function [EmbeddedNodePositions, ElasticEnergy, partition, MSE,EP,RP]...
         global TimeForFitting;
         global CountNumberOfIterations;
         global numberOfFullFits;
-    end
+   end
 
 
     MaxNumberOfIterations = 10;
@@ -90,7 +90,7 @@ function [EmbeddedNodePositions, ElasticEnergy, partition, MSE,EP,RP]...
         elseif strcmpi(varargin{i},'Local')
             LocalInfo = varargin{i+1};
             localVersion = 1;
-            NodeSubSet = LocalInfo.NodeSubSet;
+            NodeSubSet = LocalInfo.Nodes;
             partition = LocalInfo.Partition;
         %% version 1.1    
         elseif strcmpi(varargin{i},'SquaredX') 
@@ -153,28 +153,29 @@ function [EmbeddedNodePositions, ElasticEnergy, partition, MSE,EP,RP]...
         % now, local version when only a NodeSubSet is optimized
         %% version 1.1
         % Local data is the data that does not belong to the fixed nodes
-disp('Old');
-tic;
         
-        % we have to define it through negation
-        % because it allows using pre-computed partitioning
-        % otherwise we would need to know the partitioning for the optimized
-        % nodes also (and recompute the full partitioning for each tested graph)
-        inds = [];
-        AllPointIndices = 1:N; 
-        AllNodeIndices = 1:size(NodePositions, 1);
-        FixedNodeIndices = fast_setdiff(AllNodeIndices, NodeSubSet);
-        SizeFixedNodes = size(FixedNodeIndices, 2);
-        for i=1:SizeFixedNodes
-            inds = [inds;find(partition==FixedNodeIndices(i))];
-        end
-        LocalInds = fast_setdiff(AllPointIndices,inds);
-        XLocal = X(LocalInds,:);
-        PointWeightsLocal = PointWeights(LocalInds,:);
-        SquaredXLocal = SquaredX(LocalInds); %sum(XLocal.^2, 2);
-toc
-disp('new');
-tic;
+        
+%         %Debugging
+%         fprintf('Number of nodes %d number of nodes to modify %d\n',...
+%             size(NodePositions, 1), length(NodeSubSet));
+%         
+%         % we have to define it through negation
+%         % because it allows using pre-computed partitioning
+%         % otherwise we would need to know the partitioning for the optimized
+%         % nodes also (and recompute the full partitioning for each tested graph)
+%         inds = [];
+%         AllPointIndices = 1:N; 
+%         AllNodeIndices = 1:size(NodePositions, 1);
+%         FixedNodeIndices = fast_setdiff(AllNodeIndices, NodeSubSet);
+%         SizeFixedNodes = size(FixedNodeIndices, 2);
+%         for i=1:SizeFixedNodes
+%             inds = [inds;find(partition==FixedNodeIndices(i))];
+%         end
+%         LocalInds = fast_setdiff(AllPointIndices,inds);
+%         XLocal = X(LocalInds,:);
+%         PointWeightsLocal = PointWeights(LocalInds,:);
+%         SquaredXLocal = SquaredX(LocalInds); %sum(XLocal.^2, 2);
+
         % LocalInds is logical index with true for data points which does
         % not correspond to complement of selected set of nodes NodeSubSet
         % Assumption: NodeSubSet is array with numbers of nodes to position
@@ -188,9 +189,8 @@ tic;
         XLocal = X(LocalInds,:);
         PointWeightsLocal = PointWeights(LocalInds,:);
         SquaredXLocal = SquaredX(LocalInds); %sum(XLocal.^2, 2);
-toc    
         
-        
+
         
         for i=1:MaxNumberOfIterations
             if profile == 1

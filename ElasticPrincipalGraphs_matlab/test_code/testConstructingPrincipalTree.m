@@ -54,13 +54,13 @@ dim = size(X,2)
 %tic; computeElasticPrincipalTree(X,maxNumNodes,'EP',0.1); toc;
 
 
-   profile on
+%   profile on
    %tic; [np,em] = ElPrincTree_matlab(X,maxNumNodes,0.01,0.1); toc;
    %tic; [np,ed,ReportTable] = computeElasticPrincipalGraph_java(X,maxNumNodes,@parametersPrincipalCircle,'RP',0.0001); toc;
    close all;
    tic; [np,ed,ReportTable] = computeElasticPrincipalGraph(X,maxNumNodes); toc;
    %tic; [np,ed,ReportTable] = computeElasticPrincipalGraph(X,maxNumNodes,'LocalSearch',2); toc;
-   profile viewer
+%   profile viewer
    %tic; [np,ed,ReportTable] = computeElasticPrincipalCurve(X,maxNumNodes,'Mu',10); toc;
    %tic; [np,ed,ReportTable] = computeElasticPrincipalCircle(X,maxNumNodes,'Mu',0.0001); toc;
    %tic; [np,ed,ReportTable] = computeElasticPrincipalGraph(X,maxNumNodes,'GrowGrammars',[{'bisectedge'}],'ShrinkGrammars',[]); toc;
