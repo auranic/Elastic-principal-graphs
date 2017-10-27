@@ -30,7 +30,7 @@ X = load('./test_data/tree23/tree23.data');
 %X = zscore(X);
 
 % inflate the number of points
-inflationFactor = 100;
+inflationFactor = 10;
 X1 = zeros(size(X,1)*inflationFactor,size(X,2));
 k=1;
 STDV = std(X);
@@ -46,7 +46,7 @@ end
 X = X1;
 end
 
-maxNumNodes = 20;
+maxNumNodes = 50;
 
 Npoints = size(X,1)
 dim = size(X,2)
@@ -78,12 +78,12 @@ dim = size(X,2)
    display(sprintf('Number of fits = %i',numberOfFits));
    display(sprintf('Number of full fits = %i',numberOfFullFits));
    
-   figure;
-   hist(FractionOfGraphNodes,50); title('FractionOfGraphNodes');
-   figure;
-   hist(numberOfLocalPoints,50); title('numberOfLocalPoints');
-   figure;
-   hist(TimeForFitting,50); title('TimeForFitting');
+%    figure;
+%    hist(FractionOfGraphNodes,50); title('FractionOfGraphNodes');
+%    figure;
+%    hist(numberOfLocalPoints,50); title('numberOfLocalPoints');
+%    figure;
+%    hist(TimeForFitting,50); title('TimeForFitting');
   
    
   

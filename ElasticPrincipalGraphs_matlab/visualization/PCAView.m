@@ -116,7 +116,7 @@ function PCAView( Nodes, Edges, data, pc1, pc2, pc1FVE, pc2FVE )
     drawGraph2D([xNodes,yNodes],Edges,'NodeSizes',NodeSizes);
     
     
-    title('PCA view of principal tree','FontSize',20);
+    title('PCA view of principal graph','FontSize',20);
     if pc1FVE>0
         xlabel(sprintf('PCx(%2.2f%%)',pc1FVE*100),'FontSize',20);
     else
