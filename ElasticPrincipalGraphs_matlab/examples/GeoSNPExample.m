@@ -1,16 +1,16 @@
-data = load('..\test_data\HGDP_SNP\hgdp_PC3.data');
-NodePositions = load('..\test_data\HGDP_SNP\hgdp_PC3.nodes');
-Edges = load('..\test_data\HGDP_SNP\hgdp_PC3.edges');
+data = load('.\test_data\HGDP_SNP\hgdp_PC3.data');
+NodePositions = load('.\test_data\HGDP_SNP\hgdp_PC3.nodes');
+Edges = load('.\test_data\HGDP_SNP\hgdp_PC3.edges');
 nodesMM = computeMetroMapLayout(NodePositions,Edges);
 graph = makeGraph(NodePositions,Edges);
 TaxonMap = getTaxonMap(graph,data);
 
 
-LabelColorMap = createLabelColorMap('..\test_data\HGDP_SNP\hgdp_sample_ordered_classes.txt',2);
+LabelColorMap = createLabelColorMap('.\test_data\HGDP_SNP\hgdp_sample_ordered_classes.txt',2);
 
-labels = getColumnOfTable('..\test_data\HGDP_SNP\hgdp_sample_ordered_classes.txt',2);
-labelsRegion = getColumnOfTable('..\test_data\HGDP_SNP\hgdp_sample_ordered_classes.txt',3);
-data = load('..\test_data\HGDP_SNP\hgdp_PC3.data');
+labels = getColumnOfTable('.\test_data\HGDP_SNP\hgdp_sample_ordered_classes.txt',2);
+labelsRegion = getColumnOfTable('.\test_data\HGDP_SNP\hgdp_sample_ordered_classes.txt',3);
+data = load('.\test_data\HGDP_SNP\hgdp_PC3.data');
 
 for i=1:size(data,1)
     region = char(labelsRegion(i));
