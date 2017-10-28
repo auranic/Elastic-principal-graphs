@@ -58,25 +58,25 @@ dim = size(X,2)
    %tic; [np,em] = ElPrincTree_matlab(X,maxNumNodes,0.01,0.1); toc;
    %tic; [np,ed,ReportTable] = computeElasticPrincipalGraph_java(X,maxNumNodes,@parametersPrincipalCircle,'RP',0.0001); toc;
    close all;
-   tic; [np,ed,ReportTable] = computeElasticPrincipalGraph(X,maxNumNodes); toc;
-   %tic; [np,ed,ReportTable] = computeElasticPrincipalGraph(X,maxNumNodes,'LocalSearch',2); toc;
+   %tic; [np,ed,ReportTable] = computeElasticPrincipalGraph(X,maxNumNodes); toc;
+   tic; [np,ed,ReportTable] = computeElasticPrincipalGraph(X,maxNumNodes,'LocalSearch',2); toc;
 %   profile viewer
    %tic; [np,ed,ReportTable] = computeElasticPrincipalCurve(X,maxNumNodes,'Mu',10); toc;
    %tic; [np,ed,ReportTable] = computeElasticPrincipalCircle(X,maxNumNodes,'Mu',0.0001); toc;
    %tic; [np,ed,ReportTable] = computeElasticPrincipalGraph(X,maxNumNodes,'GrowGrammars',[{'bisectedge'}],'ShrinkGrammars',[]); toc;
-   em = MakeUniformElasticMatrix(ed,0.01,0.1);
+   %em = MakeUniformElasticMatrix(ed,0.01,0.1);
    %figure; plot(X(:,1),X(:,2),'b.'); hold on; drawGraph2D(np,ed);
    %[v,u,s] = pca(X);
    %figure; plot(u(:,1),u(:,2),'b.'); hold on; drawGraph2D(np*v,ed);
     
    
-   display(sprintf('Average number of data points in the fit = %2.2f',mean(numberOfLocalPoints)));
-   display(sprintf('Average number of graph nodes in the fit = %2.2f',numberOfGraphNodes/numberOfFits));
-   display(sprintf('Average fraction of graph nodes = %2.2f',mean(FractionOfGraphNodes)));
-   display(sprintf('Average number of iterations = %2.2f',mean(CountNumberOfIterations)));
-   display(sprintf('Average time for fitting = %2.2e',mean(TimeForFitting)));
-   display(sprintf('Number of fits = %i',numberOfFits));
-   display(sprintf('Number of full fits = %i',numberOfFullFits));
+%    display(sprintf('Average number of data points in the fit = %2.2f',mean(numberOfLocalPoints)));
+%    display(sprintf('Average number of graph nodes in the fit = %2.2f',numberOfGraphNodes/numberOfFits));
+%    display(sprintf('Average fraction of graph nodes = %2.2f',mean(FractionOfGraphNodes)));
+%    display(sprintf('Average number of iterations = %2.2f',mean(CountNumberOfIterations)));
+%    display(sprintf('Average time for fitting = %2.2e',mean(TimeForFitting)));
+%    display(sprintf('Number of fits = %i',numberOfFits));
+%    display(sprintf('Number of full fits = %i',numberOfFullFits));
    
 %    figure;
 %    hist(FractionOfGraphNodes,50); title('FractionOfGraphNodes');
