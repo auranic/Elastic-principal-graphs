@@ -12,7 +12,7 @@ function [partition, dists] = ...
 %   MaxBlockSize integer number which defines maximal number of
 %       simultaneously calculated distances. Maximal size of created matrix
 %       is MaxBlockSize-by-k, where k is number of nodes.
-%   SquaredX is n-by-1 vector of data vectors length: SquaredX = sum(X.^2,2); 
+%   SquaredX is n-by-1 vector of data vectors length: SquaredX = sum(X.^2,2);
 %   TrimmingRadius (optional) is squared trimming radius.
 %
 %   partition is n-by-1 vector. partition(i) is number of node which is
@@ -37,10 +37,9 @@ function [partition, dists] = ...
         % Prepare index
         ind = i:last;
         % Calculate distances
-        d = bsxfun(@minus, centrLength,  2 * (X(ind,:) * cent));
+        d = bsxfun(@plus, SquaredX(ind), centrLength) - 2 * (X(ind,:) * cent);
         [dists(ind), partition(ind)] = min(d,[],2);
     end
-    dists = dists + SquaredX;
     %Apply trimming
     ind = dists > TrimmingRadius;
     partition(ind) = 0;

@@ -1,5 +1,5 @@
 function [partition, dists] = ...
-    PartitionData(X, NodePositions, MaxBlockSize, SquaredX, TrimmingRadius)
+    PartitionDataM(X, NodePositions, MaxBlockSize, SquaredX, TrimmingRadius)
 %%%%%%%%%%%%%%%%%%%%%%%
 %% Partition the data by proximity to graph nodes (same step as in K-means EM procedure)
 %%%%%%%%%%%%%%%%%%%%%%%
