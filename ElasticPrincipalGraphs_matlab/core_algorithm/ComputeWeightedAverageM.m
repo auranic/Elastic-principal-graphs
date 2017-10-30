@@ -24,7 +24,8 @@ function [NodeClusterCenters, NodeClusterRelativeSize] =...
     % Calculate weights for Relative size
     tmp = accumarray(part, PointWeights, [NumberOfNodes + 1, 1]);
     NodeClusterRelativeSize = tmp(2:end) / TotalWeight;
-    
+    % To prevent appearance of NaN
+    tmp(tmp == 0) = 1;
     NodeClusterCenters = zeros(NumberOfNodes + 1,size(X, 2));
     for k=1:M
         NodeClusterCenters(:, k) = accumarray(part,X(:, k), [NumberOfNodes+1, 1]) ./ tmp;

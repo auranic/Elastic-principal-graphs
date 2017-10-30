@@ -152,34 +152,12 @@ function [EmbeddedNodePositions, ElasticEnergy, partition, MSE,EP,RP]...
     else
         % now, local version when only a NodeSubSet is optimized
         %% version 1.1
+        
         % Local data is the data that does not belong to the fixed nodes
-        
-        
-%         %Debugging
-%         fprintf('Number of nodes %d number of nodes to modify %d\n',...
-%             size(NodePositions, 1), length(NodeSubSet));
-%         
-%         % we have to define it through negation
-%         % because it allows using pre-computed partitioning
-%         % otherwise we would need to know the partitioning for the optimized
-%         % nodes also (and recompute the full partitioning for each tested graph)
-%         inds = [];
-%         AllPointIndices = 1:N; 
-%         AllNodeIndices = 1:size(NodePositions, 1);
-%         FixedNodeIndices = fast_setdiff(AllNodeIndices, NodeSubSet);
-%         SizeFixedNodes = size(FixedNodeIndices, 2);
-%         for i=1:SizeFixedNodes
-%             inds = [inds;find(partition==FixedNodeIndices(i))];
-%         end
-%         LocalInds = fast_setdiff(AllPointIndices,inds);
-%         XLocal = X(LocalInds,:);
-%         PointWeightsLocal = PointWeights(LocalInds,:);
-%         SquaredXLocal = SquaredX(LocalInds); %sum(XLocal.^2, 2);
-
-        % LocalInds is logical index with true for data points which does
-        % not correspond to complement of selected set of nodes NodeSubSet
-        % Assumption: NodeSubSet is array with numbers of nodes to position
-        % optimisation.
+        % LocalInds is logical index with value true for data points which
+        % does not correspond to complement of selected set of nodes
+        % NodeSubSet.
+        % NodeSubSet is array with numbers of nodes to position optimisation.
         % Form complement set
         FixedSubSet = 1 : size(NodePositions, 1);
         FixedSubSet(NodeSubSet) = [];
@@ -189,8 +167,6 @@ function [EmbeddedNodePositions, ElasticEnergy, partition, MSE,EP,RP]...
         XLocal = X(LocalInds,:);
         PointWeightsLocal = PointWeights(LocalInds,:);
         SquaredXLocal = SquaredX(LocalInds); %sum(XLocal.^2, 2);
-        
-
         
         for i=1:MaxNumberOfIterations
             if profile == 1
@@ -225,7 +201,7 @@ function [EmbeddedNodePositions, ElasticEnergy, partition, MSE,EP,RP]...
                 TimeForFitting(end + 1) = toc; %#ok<AGROW>
             end
             
-            diff = ComputeRelativeChangeOfNodePositions(NodePositions(NodeSubSet,:),NewNodePositions(NodeSubSet,:));
+            diff = ComputeRelativeChangeOfNodePositions(NodePositions(NodeSubSet,:), NewNodePositions(NodeSubSet,:));
             
             if verbose
                 display(sprintf(['Iteration %i, diff=%3.3f, E=%4.4f,',...
@@ -257,77 +233,50 @@ function [EmbeddedNodePositions, ElasticEnergy, partition, MSE,EP,RP]...
     EmbeddedNodePositions = NodePositions;
 end
 
-
 function [SpringLaplacianMatrix] = ComputeSpringLaplacianMatrix(ElasticMatrix)
 %%%%%%%%%%%%%%%%%%%%%%%
 %% Transforms the ElasticMatrix into the SpringLaplacianMatrix ready to be used in the SLAU solving
 %%%%%%%%%%%%%%%%%%%%%%%
 
-NumberOfNodes = size(ElasticMatrix,1);
+    NumberOfNodes = size(ElasticMatrix,1);
 
-% first, make the vector of mu coefficients
-Mu = diag(ElasticMatrix);
-% create the matrix with edge elasticity moduli at non-diagonal elements
-Lambda = ElasticMatrix - diag(Mu);
-% Diagonal matrix of edge elasticities
-LambdaSums = sum(Lambda);
-DL = diag(LambdaSums);
-% E matrix (contribution from edges) is simply weighted Laplacian
-E = DL-Lambda;
+    % first, make the vector of mu coefficients
+    Mu = diag(ElasticMatrix);
+    % create the matrix with edge elasticity moduli at non-diagonal elements
+    Lambda = ElasticMatrix - diag(Mu);
+    % Diagonal matrix of edge elasticities
+    LambdaSums = sum(Lambda);
+    DL = diag(LambdaSums);
+    % E matrix (contribution from edges) is simply weighted Laplacian
+    E = DL-Lambda;
 
-% S matrix (contribution from stars) is composed of Laplacian for positive strings (star edges) with
-% elasticities mu/k, where k is the order of the star, and Laplacian for
-% negative strings with elasticities -mu/k^2. Negative springs connect all
-% star leafs in a clique.
+    % S matrix (contribution from stars) is composed of Laplacian for positive strings (star edges) with
+    % elasticities mu/k, where k is the order of the star, and Laplacian for
+    % negative strings with elasticities -mu/k^2. Negative springs connect all
+    % star leafs in a clique.
 
-StarCenterIndices = find(Mu>0);
-S = zeros(NumberOfNodes,NumberOfNodes);
-
-for i=1:size(StarCenterIndices,1)
-    Spart = zeros(NumberOfNodes,NumberOfNodes);
+    StarCenterIndices = find(Mu>0);
+    
+    S = zeros(NumberOfNodes,NumberOfNodes);
+    
+    for i=1:size(StarCenterIndices,1)
+        Spart = zeros(NumberOfNodes,NumberOfNodes);
         % leaf indices
-        leafs = find(Lambda(:,StarCenterIndices(i))>0);
+        leafs = Lambda(:,StarCenterIndices(i))>0;
         % order of the star
-        K = size(leafs,1);
+        K = sum(leafs);
         
         Spart(StarCenterIndices(i),StarCenterIndices(i)) = Mu(StarCenterIndices(i));
         Spart(StarCenterIndices(i),leafs) = -Mu(StarCenterIndices(i))/K;
         Spart(leafs,StarCenterIndices(i)) = -Mu(StarCenterIndices(i))/K;
         Spart(leafs,leafs) = Mu(StarCenterIndices(i))/K^2;
-    S = S+Spart;
-end
-
-SpringLaplacianMatrix = E+S;
+        S = S + Spart;
+    end
+    SpringLaplacianMatrix = E+S;
 end
 
 function [NodeClusterCenters, NodeClusterRelativeSize] =...
     ComputeWeightedAverage(X, partition, PointWeights, NumberOfNodes)
-% %ComputeWeightedAverage calculate NodeClausterCentres as weighted averages
-% %of points from matrix X.
-% %
-% %Inputs
-% %   X is n-by-m matrix of data points where each row corresponds to one
-% %       observation.
-% %   partition is n-by-1 (column) vector of node numbers. This vector
-% %       associate data points with Nodes.
-% %   PointWeights is n-by-m (column) vector of point weights.
-% %   NumberOfNodes is number of nodes to calculate means.
-% %
-% %Important! if there is no point associated with node then coordinates of
-% %this node centroid are zero.
-% %
-%      NodeClusterCenters = zeros(NumberOfNodes,size(X,2));
-%      NodeClusterRelativeSize = zeros(NumberOfNodes,1);
-%      TotalWeight = sum(PointWeights);
-%      for i=1:NumberOfNodes
-%          inds = find(partition==i);
-%          if(size(inds,1)>0)
-%              tmp = sum(PointWeights(inds));
-%              NodeClusterCenters(i,:) = sum(bsxfun(@times,X(inds,:),PointWeights(inds)),1)/tmp;
-%              NodeClusterRelativeSize(i) = tmp/TotalWeight;
-%          end
-%      end
-     
 %ComputeWeightedAverage calculate NodeClusterCentres as weighted averages
 %of points from matrix X.
 %
@@ -352,7 +301,8 @@ function [NodeClusterCenters, NodeClusterRelativeSize] =...
     % Calculate weights for Relative size
     tmp = accumarray(part, PointWeights, [NumberOfNodes + 1, 1]);
     NodeClusterRelativeSize = tmp(2:end) / TotalWeight;
-    
+    % To prevent appearance of NaN
+    tmp(tmp == 0) = 1;
     NodeClusterCenters = zeros(NumberOfNodes + 1,size(X, 2));
     for k=1:M
         NodeClusterCenters(:, k) = accumarray(part,X(:, k), [NumberOfNodes+1, 1]) ./ tmp;
@@ -424,11 +374,3 @@ function [diff] = ComputeRelativeChangeOfNodePositions(NodePositions,NewNodePosi
     diff = max(diff);
     %diff = mean(diff);
 end
-
-% %% faster alternative for setdiff
-% function [Z] = fast_setdiff(X,Y)
-%   check = false(1, max(max(X), max(Y)));
-%   check(X) = true;
-%   check(Y) = false;
-%   Z = X(check(X));  
-% end
