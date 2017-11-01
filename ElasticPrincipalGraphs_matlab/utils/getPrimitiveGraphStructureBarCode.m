@@ -1,23 +1,21 @@
-function [barcode] = getPrimitiveGraphStructureBarCode(ElasticMatrix)
+function [barcode, N] = getPrimitiveGraphStructureBarCode(ElasticMatrix)
+% getPrimitiveGraphStructureBarCode forms array N with number of stars with k
+% leaves in element k and barcode.
 
-Mu = diag(ElasticMatrix);
-L = ElasticMatrix - diag(Mu);
-Connectivities = sum(L>0);
-maxc = max(Connectivities);
-ee = 1:maxc;
-N = histc(Connectivities,ee);
-barcode = strcat('||',int2str(size(ElasticMatrix,1)));
-if maxc<=2
-    barcode = strcat('0',barcode);
-else
-    for i=3:size(N,2)
-        if i~=size(N,2)
-            barcode = strcat(strcat('|',int2str(N(i))),barcode);
-        else
-            barcode = strcat(int2str(N(i)),barcode);
+    % Decompose ElasticMatrix
+    Mu = diag(ElasticMatrix);
+    L = ElasticMatrix - diag(Mu);
+    Connectivities = sum(L>0);
+    N = accumarray(Connectivities', 1);
+    % Number of nodes
+    barcode = ['|',int2str(size(ElasticMatrix,1))];
+    % Continue by addition left part
+    if length(N)<=2
+        barcode = ['0|',barcode];
+    else
+        for i=3:length(N)
+            barcode = [int2str(N(i)), '|', barcode]; %#ok<AGROW>
         end
     end
-end
-
 end
 

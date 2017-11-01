@@ -1,8 +1,9 @@
 function [NodePositions, Edges, ReportTable] =...
 computeElasticPrincipalGraph(data,NumNodes,varargin)
 %computeElasticPrincipalGraph calculate elastic principal graph. 
-%if grammar parameters 'GrowGrammar' and 'ShrinkGrammar' are not specified then
-%by default the algorithm constructs a principal tree with default elasticity coefficients (Lambda=0.01,Mu=0.1)
+%If grammar parameters 'GrowGrammar' and 'ShrinkGrammar' are not specified
+%then by default the algorithm constructs a principal tree with default
+%elasticity coefficients (Lambda=0.01,Mu=0.1) 
 %
 %
 %Theory and some examples of computeElasticPrincipalTree usage can be found
@@ -175,10 +176,6 @@ setallpaths;
     mv = mean(data);
     data_centered = bsxfun(@minus,data,mv);
 
-    if graphinitialized
-        np = bsxfun(@minus,np,mv);
-    end
-    
     [vglobal, uglobal, explainedVariances] = pca(data_centered);
     if reduceDimension
         % Form index of used PCs
@@ -195,8 +192,6 @@ setallpaths;
         display(sprintf('Variance retained in %3.0f dimensions: %2.2f%%',...
             (length(indPC)),perc));
         data_centered = uglobal(:,indPC);
-        %% we should do something here about already initialized node positions
-        np = (vglobal(:,indPC)'*np)';
     else
         indPC = 1:size(data,2);
     end

@@ -1,7 +1,7 @@
 function [ElasticEnergy, MSE, EP, RP] = ...
     ComputePrimitiveGraphElasticEnergy(X, NodePositions, ElasticMatrix,...
     partition, dists, BranchingFee)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Computes elastic energy of primitive elastic graph 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -26,32 +26,37 @@ function [ElasticEnergy, MSE, EP, RP] = ...
 %   EP is edge potential 
 %   RP is harmonicity potential 
 
-% Calculate MSE by usage dists
-MSE = sum(dists)/size(X,1);
+    % Calculate MSE by usage dists
+    MSE = sum(dists)/size(dists,1);
 
-EP = 0;
-RP = 0;
+    RP = 0;
 
-Mu = diag(ElasticMatrix);
-Lambda = ElasticMatrix - diag(Mu);
-StarCenterIndices = find(Mu>0);
+    Mu = diag(ElasticMatrix);
+    Lambda = triu(ElasticMatrix,1);
+    StarCenterIndices = find(Mu>0);
 
-[row,col] = find(Lambda);
+    [row,col] = find(Lambda);
+    
 
-for i=1:size(row,1)
-    dev = NodePositions(row(i),:)-NodePositions(col(i),:);
-    l = Lambda(row(i),col(i));
-    EP = EP+l*(dev*dev');
+% %%%%%%%%%%%%% Debug!!!
+cnt = sum(Lambda+Lambda'>0);
+ind = cnt == 1;
+if sum(Mu(ind))>0
+    fprintf('n = %d\n',length(Mu));
 end
+    
+    dev = NodePositions(row,:)-NodePositions(col,:);
+    l = Lambda(Lambda>0);
+    EP = sum(l(:).*sum(dev.^2,2));
 
+    Lambda = Lambda + Lambda';
 
-for i=1:size(StarCenterIndices,1)
-    leafs = find(Lambda(:,StarCenterIndices(i))>0);
-    K = size(leafs,1);
-    dev = NodePositions(StarCenterIndices(i),:)-1/K*sum(NodePositions(leafs,:));
-    RP = RP+Mu(StarCenterIndices(i))*(dev*dev');
-end
+    for i=1:size(StarCenterIndices,1)
+        leafs = find(Lambda(:,StarCenterIndices(i))>0);
+        K = size(leafs,1);
+        dev = NodePositions(StarCenterIndices(i),:)-1/K*sum(NodePositions(leafs,:));
+        RP = RP+Mu(StarCenterIndices(i))*(dev*dev');
+    end
 
-ElasticEnergy = MSE+EP+RP;
-
+    ElasticEnergy = MSE + EP + RP;
 end

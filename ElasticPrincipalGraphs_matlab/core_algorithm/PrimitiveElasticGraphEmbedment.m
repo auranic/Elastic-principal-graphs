@@ -1,5 +1,6 @@
-function [EmbeddedNodePositions, ElasticEnergy, partition, MSE,EP,RP]...
-    = PrimitiveElasticGraphEmbedment(X, NodePositions, ElasticMatrix, varargin)
+function [EmbeddedNodePositions, ElasticEnergy, partition, dists,...
+    MSE, EP, RP] = PrimitiveElasticGraphEmbedment(X, NodePositions,...
+    ElasticMatrix, varargin)
 % This is the core function for fitting a primitive elastic graph to the data
 % Inputs
 %   X - is the n-by-m data matrix. Each row corresponds to one data point.
@@ -29,6 +30,18 @@ function [EmbeddedNodePositions, ElasticEnergy, partition, MSE,EP,RP]...
 %       fields 'Nodes' - which nodes are optimized, 'Partition' -
 %       pre-computed partitioning of X
 %   'SquaredX' with n-by-1 vector of squared length of data vectors.
+%
+% Outputs
+%   EmbeddedNodePositions is positions of empbedded nodes
+%   ElasticEnergy is total elastic energy 
+%   partition is n-by-1 vector. partition(i) is number of node which is
+%       associated with data point X(i,:).
+%   dists is array of squared distances form each data point to nerest
+%       node.
+%   MSE is mean square error of data approximation.
+%   EP is edge potential 
+%   RP is harmonicity potential 
+%
 
     % Set profile = 1 for debug purposes
     profile = 0;
@@ -105,7 +118,6 @@ function [EmbeddedNodePositions, ElasticEnergy, partition, MSE,EP,RP]...
     end
 
     if ~localVersion
-        
         % Main iterative EM cycle: partition, fit given the partition, repeat
         for i=1:MaxNumberOfIterations
             
@@ -181,13 +193,13 @@ function [EmbeddedNodePositions, ElasticEnergy, partition, MSE,EP,RP]...
                     NodePositions, ElasticMatrix,...
                     partitionLocal, distsLocal, 0);
             else
-                [partitionLocal] = PartitionData(XLocal,...
+                partitionLocal = PartitionData(XLocal,...
                     NodePositions(NodeSubSet,:),...
                     MaxBlockSize, SquaredXLocal, TrimmingRadius);
                 ElasticEnergy = 0;
             end
             
-            [NewNodePositions] =...
+            NewNodePositions =...
                 FitGraph2DataGivenPartitionLocal(XLocal,...
                 PointWeightsLocal, NodePositions, SpringLaplacianMatrix,...
                 partitionLocal, NodeSubSet);

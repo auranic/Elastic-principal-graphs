@@ -1,11 +1,51 @@
-function [NodePositions2,ElasticMatrix2, ElasticEnergy] = ApplyOptimalGraphGrammarOpeation(X,NodePositions,ElasticMatrix,operationtypes,varargin)
-% this functinon applies the most optimal graph grammar operation of operationtype
-% the embedment of an elastic graph described by ElasticMatrix
+function [NodePositions2, ElasticMatrix2, partition, dists] = ...
+    ApplyOptimalGraphGrammarOpeation(X, NodePositions, ElasticMatrix,...
+    operationtypes, varargin)
+% This functinon applies the most optimal graph grammar operation of
+% operationtype for the embedment of an elastic graph described by
+% ElasticMatrix.
+%
+%Inputs:
+%   X - is the n-by-m data matrix. Each row corresponds to one data point.
+%   NodePositions - is k-by-m matrix of positions of the original graph
+%       nodes in the same space as X.
+%   ElasticMatrix - k-by-k symmetric matrix describing the connectivity and
+%       the elastic properties of the graph. Star elasticities (mu
+%       coefficients) are presented on the main diagonal (non-zero entries
+%       only for star centers), and the edge elasticity moduli are
+%       presented out of diagonal.
+%   operationtypes is cell array with names of graph grammar operations.
+%   varargin contains Name, Value pairs. Names can be: 
+%   'MaxBlockSize' with integer number which is maximum size of the block
+%       of the distance matrix when partition the data. This means that
+%       maximal size of distance matrix is MaxBlockSize-by-k where k is
+%       number of nodes.
+%   'verbose' with 1/0 is to display/hide the energy values at each
+%       iteration and in the end of the process.
+%   'TrimmingRadius' is trimming radius, a parameter required for robust
+%       principal graphs (see https://github.com/auranic/Elastic-principal-graphs/wiki/Robust-principal-graphs)
+%   'LocalSearch' specifies local test for optimizing only a subset of the
+%       nodes. Integer number defines radius of neghbourhood to use.
+%   The following Name,Value pairs can be used in ????????????????
+%   'MaxNumberOfIterations' with integer number which is maximum number of
+%       iterations for EM algorithm. 
+%   'eps' with real number which is minimal relative change in the node
+%       positions to be considered the graph embedded (convergence criteria) 
+%   'PointWeights' with n-by-1 vector of data point weights
+%
+% Outputs
+%   NodePositions2 is positions of empbedded nodes.
+%   ElasticMatrix2 is elastic matrix of the best selected new graph.
+%   partition is n-by-1 vector. partition(i) is number of node which is
+%       associated with data point X(i,:).
+%   dists is array of squared distances form each data point to nerest
+%       node.
 
-LocalSearch = 0;
-RadiusOfLocalSearch = 0;
-MaxBlockSize = 100000;
-TrimmingRadius = Inf;
+    % Parse input arguments
+    LocalSearch = 0;
+    RadiusOfLocalSearch = 0;
+    MaxBlockSize = 100000;
+    TrimmingRadius = Inf;
 
     for i=1:2:length(varargin)
         if strcmpi(varargin{i},'LocalSearch')
@@ -19,71 +59,76 @@ TrimmingRadius = Inf;
             TrimmingRadius = varargin{i+1};
         end
     end
+    TrimmingRadius = TrimmingRadius .^ 2;
 
+    % We compute these things here in order not to recompute for each graph embedment
+    SquaredX = sum(X.^2, 2);
 
-k=1;
-%tic
-for i=1:size(operationtypes,1)
-    %display(sprintf('Operation type = %s',char(operationtypes(i))));
-    [NodePositionArray, ElasticMatrices, NodeIndicesArray] = GraphGrammarOperation(NodePositions,ElasticMatrix,X,char(operationtypes(i)));
-    for j=1:size(NodePositionArray,3)
-        NodePositionArrayAll(:,:,k) = NodePositionArray(:,:,j);
-        ElasticMatricesAll(:,:,k) = ElasticMatrices(:,:,j);
-        NodeIndicesArrayAll(:,k) = NodeIndicesArray(:,j);
-        k = k+1;
+    % Form new graphs to check
+    NodePositionArrayAll = [];
+    ElasticMatricesAll = [];
+    NodeIndicesArrayAll = [];
+    for i=1:size(operationtypes,1)
+        [NodePositionArray, ElasticMatrices, NodeIndicesArray] =... 
+            GraphGrammarOperation(NodePositions, ElasticMatrix,...
+                X, char(operationtypes(i)), SquaredX);
+        NodePositionArrayAll = cat(3, NodePositionArrayAll, NodePositionArray);
+        ElasticMatricesAll = cat(3, ElasticMatricesAll, ElasticMatrices);
+        NodeIndicesArrayAll = cat(2, NodeIndicesArrayAll, NodeIndicesArray);
     end
-    %display(sprintf('Time spent for applying %s: %f',char(operationtypes(i)),toc));
-end
 
+    minEnergy = realmax;
+    k = -1;
 
-minEnergy = realmax;
-k = -1;
-
-% we compute these things here in order not to recompute for each graph embedment
-SquaredX = sum(X.^2, 2);
-
-
-LocalInfo = struct();
-LocalInfo.Partition = [];
-
-if LocalSearch
-    [LocalInfo.Partition] = PartitionData(X, NodePositions, MaxBlockSize, SquaredX, TrimmingRadius);
-end
-
-
-%tic
-for i=1:size(ElasticMatricesAll,3)
+    % Form data for local search
     if LocalSearch
-        NodeIndices = NodeIndicesArrayAll(:,i);
-        sd = fast_setdiff1(1:size(NodePositionArrayAll(:,:,i),1),NodeIndices);
-        if(size(sd,2)==0)
-            sd = [size(NodePositions,1)];
-            sd1 = GetNeighbourhoodOnTheGraph(ElasticMatrix,sd,1);
-            sd = fast_setdiff1(sd1,sd);
+        LocalInfo = struct();
+        LocalInfo.Partition = [];
+        [LocalInfo.Partition] =...
+            PartitionData(X, NodePositions, MaxBlockSize,...
+            SquaredX, TrimmingRadius);
+    end
+
+    % Test each possible continuation and select the best one
+    for i=1:size(ElasticMatricesAll,3)
+        %Control of ElasticMatrix
+        em = ElasticMatricesAll(:,:,i);
+        mu = diag(em);
+        em1 = em - diag(mu);
+        inds = sum(em1 > 0) == 1;
+        mu(inds) = 0;
+        em = em1 + diag(mu);
+        if LocalSearch
+            NodeIndices = NodeIndicesArrayAll(:,i);
+            sd = fast_setdiff1(1:size(NodePositionArrayAll(:,:,i),1),NodeIndices);
+            if(size(sd,2)==0)
+                sd = size(NodePositions,1);
+                sd1 = GetNeighbourhoodOnTheGraph(ElasticMatrix,sd,1);
+                sd = fast_setdiff1(sd1,sd);
+            end
+            LocalInfo.Nodes =...
+                GetNeighbourhoodOnTheGraph(ElasticMatricesAll(:,:,i),...
+                sd, RadiusOfLocalSearch);
+            [np, ElasticEnergy, part, dist] =...
+                PrimitiveElasticGraphEmbedment(X,...
+                NodePositionArrayAll(:,:,i), em,...
+                'verbose', 0, 'SquaredX', SquaredX, 'Local', LocalInfo);
+        else
+            [np, ElasticEnergy, part, dist] =...
+                PrimitiveElasticGraphEmbedment(X,...
+                NodePositionArrayAll(:,:,i), em,...
+                'verbose', 0, 'SquaredX', SquaredX);
         end
-        LocalInfo.Nodes = GetNeighbourhoodOnTheGraph(ElasticMatricesAll(:,:,i),sd,RadiusOfLocalSearch);
-        [np,ElasticEnergy] = PrimitiveElasticGraphEmbedment(X, NodePositionArrayAll(:,:,i), ElasticMatricesAll(:,:,i),'verbose',0,'SquaredX',SquaredX,'Local',LocalInfo);
-    else
-        [np,ElasticEnergy] = PrimitiveElasticGraphEmbedment(X, NodePositionArrayAll(:,:,i), ElasticMatricesAll(:,:,i),'verbose',0,'SquaredX',SquaredX);
+        % Remember the best
+        if ElasticEnergy<minEnergy
+            minEnergy = ElasticEnergy;
+            NodePositions2 = np;
+            partition = part;
+            dists = dist;
+            ElasticMatrix2 = em;
+            k = i; 
+        end
     end
-    nps(:,:,i) = np(:,:);
-    if ElasticEnergy<minEnergy
-        minEnergy = ElasticEnergy;
-        k = i; 
-    end
-end
-
-if LocalSearch
-    [NodePositions2,ElasticEnergy] = PrimitiveElasticGraphEmbedment(X, NodePositionArrayAll(:,:,k), ElasticMatricesAll(:,:,k),'verbose',0,'SquaredX',SquaredX);
-else
-    NodePositions2(:,:) = nps(:,:,k);
-    ElasticEnergy = minEnergy;
-end
-    ElasticMatrix2 = ElasticMatricesAll(:,:,k);
-
-%display(sprintf('Time spent for optimizing graphs: %f',toc));
-
-
 end
 
 function Z = fast_setdiff1(X,Y)

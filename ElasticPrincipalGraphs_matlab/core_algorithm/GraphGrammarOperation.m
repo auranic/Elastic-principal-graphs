@@ -1,4 +1,5 @@
-function [NodePositionArray, ElasticMatrices, NodeIndicesArray] = GraphGrammarOperation(NodePositions,ElasticMatrix,X,type)
+function [NodePositionArray, ElasticMatrices, NodeIndicesArray] =...
+    GraphGrammarOperation(NodePositions, ElasticMatrix, X, type, SqX)
 %
 % This is the core function for application of graph grammar approach for
 % constructing primitive elastic principal graphs
@@ -12,61 +13,69 @@ function [NodePositionArray, ElasticMatrices, NodeIndicesArray] = GraphGrammarOp
 % and star elasticities along the diagonal
 % X - is dataset which is to be approximated by the graph
 % type - one of the operation types:
-% 'addnode2node'
-% 'removenode'
-% 'bisectedge'
-% 'shrinkedge'
+%   'addnode2node'
+%   'removenode'
+%   'bisectedge'
+%   'shrinkedge'
+% SqX is column vector of squared lengths of data vectors
 %
 % Outputs:
 % NodePositionArray - 3d array with dimensions
-% [node_number,dimension,graph_number], represents all generated node
+% [node_number, NodePosition, graph_number], represents all generated node
 % configurations
-% ElasticMatrices - 3d array with dimensions [node_number,node_number,graph_number], 
+% ElasticMatrices - 3d array with dimensions 
+% [node_number, node_number, graph_number], 
 % represents all generated elasticity matrices 
 %
 %% in the version 1.1 with a possibility of local search, each operation reports NodeIndices
 %% which specifies how the nodes in the newly generated graph are related to the nodes
 %% in the initial graph, and contains zeros for new nodes.
 
-switch type
-    case 'addnode2node', [NodePositionArray, ElasticMatrices, NodeIndicesArray] = AddNode2Node(NodePositions,ElasticMatrix,X);
-    case 'removenode',  [NodePositionArray, ElasticMatrices, NodeIndicesArray] = RemoveNode(NodePositions,ElasticMatrix);
-    case 'bisectedge',  [NodePositionArray, ElasticMatrices, NodeIndicesArray] = BisectEdge(NodePositions,ElasticMatrix);
-    case 'shrinkedge',  [NodePositionArray, ElasticMatrices, NodeIndicesArray] = ShrinkEdge(NodePositions,ElasticMatrix);
-    otherwise display(sprintf('ERROR: operation %s is not defined',type)); 
+    switch type
+        case 'addnode2node'
+            [NodePositionArray, ElasticMatrices, NodeIndicesArray] = AddNode2Node(NodePositions,ElasticMatrix,X,SqX);
+        case 'removenode'
+            [NodePositionArray, ElasticMatrices, NodeIndicesArray] = RemoveNode(NodePositions,ElasticMatrix);
+        case 'bisectedge'
+            [NodePositionArray, ElasticMatrices, NodeIndicesArray] = BisectEdge(NodePositions,ElasticMatrix);
+        case 'shrinkedge'
+            [NodePositionArray, ElasticMatrices, NodeIndicesArray] = ShrinkEdge(NodePositions,ElasticMatrix);
+        otherwise
+            display(sprintf('ERROR: operation %s is not defined',type));
+    end
 end
 
 
-end
-
-
-function [NodePositionArray, ElasticMatrices, NodeIndicesArray] = AddNode2Node(NodePositions,ElasticMatrix,X)
+function [NodePositionArray, ElasticMatrices, NodeIndicesArray]...
+    = AddNode2Node(NodePositions, ElasticMatrix, X, SqX)
 %
 % This grammar operation adds a node to each graph node
-% The positions of the node is chosen as a linear extrapolation for a leaf node
-% (in this case the elasticity of a newborn star is chosed as in BisectEdge operation), 
+% The positions of the node is chosen as a linear extrapolation for a leaf
+% node (in this case the elasticity of a newborn star is chosed as in
+% BisectEdge operation),
 % or
 % as the data point giving the minimum local MSE for a star (without any optimization).
 
-NNodes = size(NodePositions,1);
-NumberOfGraphs = NNodes;
-NodePositionArray = zeros(NNodes+1,size(NodePositions,2),NumberOfGraphs);
-ElasticMatrices = zeros(NNodes+1,NNodes+1,NumberOfGraphs);
-Mus = diag(ElasticMatrix);
-L = ElasticMatrix - diag(Mus);
-Connectivities = sum(L>0);
+    NNodes = size(NodePositions,1);
+    NumberOfGraphs = NNodes;
+    NodePositionArray = zeros(NNodes + 1, size(NodePositions, 2), NumberOfGraphs);
+    ElasticMatrices = zeros(NNodes + 1, NNodes + 1, NumberOfGraphs);
+    Mus = diag(ElasticMatrix);
+    L = ElasticMatrix - diag(Mus);
+    Connectivities = sum(L > 0);
 
-k=1;
-[~, ~, partition] = PrimitiveElasticGraphEmbedment(X,NodePositions,ElasticMatrix,'MaxNumberOfIterations',0);
+    k=1;
+    partition = PartitionData(X, NodePositions, 100000, SqX, Inf);
+        
 for i=1:NNodes
      
     meanLambda = mean(L(i,L(i,:)>0));
 
     if(Connectivities(i)==1)
         ineighbour = find(L(i,:)>0);
-        NewNodePosition = 2*NodePositions(i,:)-NodePositions(ineighbour,:);
-        [np,em,inds] = f_add_nonconnected_node(NodePositions,ElasticMatrix,NewNodePosition);
-        nn = size(np,1);
+        NewNodePosition = 2 * NodePositions(i, :) - NodePositions(ineighbour, :);
+        [np,em,inds] = f_add_nonconnected_node(NodePositions, ElasticMatrix, NewNodePosition);
+        nn = size(np, 1);
         [em] = f_add_edge(em,i,nn,ElasticMatrix(i,ineighbour));
         em(i,i) = ElasticMatrix(ineighbour,ineighbour);
         NodePositionArray(:,:,k) = np(:,:);
@@ -90,33 +99,6 @@ for i=1:NNodes
             
         minMSE = realmax;
         m = -1;
-%       this is way too expensive!!! ideas - 1) pre-cluster points into 10
-%       clusters and test cluster centers as candidate node positions,
-%       2) split the largest partition? 3) something else?
-%          for j=1:size(xlocal,1)
-%              [nplocal1,emlocal1] = f_add_nonconnected_node(nplocal,emlocal,xlocal(j,:));
-%              [~, ~, ~, MSE, ~, ~] = PrimitiveElasticGraphEmbedment(xlocal,nplocal1,emlocal1,'MaxNumberOfIterations',0);
-%              if(MSE<minMSE)
-%                  minMSE = MSE;
-%                  m = j; 
-%              end
-%          end
-%         NodeNewPosition = xlocal(m,:);
-
-%          % idea #1 - test 10 local cluster centers
-%          localcentroids = fastkmeans(xlocal,10,5);
-%          for j=1:size(localcentroids,1)
-%              [nplocal1,emlocal1] = f_add_nonconnected_node(nplocal,emlocal,localcentroids(j,:));
-%              [~, ~, ~, MSE, ~, ~] = PrimitiveElasticGraphEmbedment(xlocal,nplocal1,emlocal1,'MaxNumberOfIterations',0);
-%              if(MSE<minMSE)
-%                  minMSE = MSE;
-%                  m = j; 
-%              end
-%          end
-%          NodeNewPosition = localcentroids(m,:);
-
-        % random point
-        % NodeNewPosition = xlocal(randi(size(xlocal,1)));
         
         % mean point of the central cluster - seems to work the best
         NodeNewPosition = mean(xlocal);
@@ -275,8 +257,9 @@ ElasticMatrix2(:,NodeNumber1) = max(lm(:,NodeNumber1),lm(:,NodeNumber2));
 ElasticMatrix2(NodeNumber1,NodeNumber1) = (ElasticMatrix(NodeNumber1,NodeNumber1)+ElasticMatrix(NodeNumber2,NodeNumber2))/2;
 end
 
-function [NodePositions2, ElasticMatrix2, NodeIndices] = f_add_nonconnected_node(NodePositions,ElasticMatrix,NewNodePosition)
-% remove from the graph node number NodeNumber
+function [NodePositions2, ElasticMatrix2, NodeIndices] =...
+    f_add_nonconnected_node(NodePositions, ElasticMatrix, NewNodePosition)
+% Add new node without connections
     NodePositions2(:,:) = NodePositions(:,:);
     NodePositions2(size(NodePositions,1)+1,:) = NewNodePosition(:); 
     ElasticMatrix2(:,:) = ElasticMatrix(:,:);

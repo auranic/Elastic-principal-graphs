@@ -1,19 +1,23 @@
-function [ElasticMatrix] = Encode2ElasticMatrix(Edges,Lambdas,Mus)
+function [ElasticMatrix] = Encode2ElasticMatrix(Edges, Lambdas, Mus)
+% Converts array of edges and vectors of elasticities for edges and stars
+% into ElasticMatrix 
 %
-% Converts set of edges and vectors of elasticities
-% for edges and stars into ElasticMatrix
+%Inputs:
+%   Edges is n-by-2 array with number of one edge's node in column 1 and
+%       number of another node of the same edge in the column 2.
+%   Lambdas is column vector of lambdas for edges specified in the Edges.
+%   Mus is column vector of Mus specified for each node.
 %
 
-NumberOfNodes = max(max(Edges));
-NumberOfEdges = size(Edges,1);
-
-ElasticMatrix = zeros(NumberOfNodes,NumberOfNodes);
-
-for i=1:NumberOfEdges
-    ElasticMatrix(Edges(i,1),Edges(i,2)) = Lambdas(i);
-    ElasticMatrix(Edges(i,2),Edges(i,1)) = Lambdas(i);
-end
-
-ElasticMatrix = ElasticMatrix+diag(Mus);
-
+    %Define sizes
+    NumberOfNodes = max(Edges(:));
+    % Create ElasticMatrix
+    ElasticMatrix = zeros(NumberOfNodes, NumberOfNodes);
+    % Transform matrix of Edges into index of ElasticMatrix
+    ind = sub2ind(size(ElasticMatrix), Edges(:,1), Edges(:,2));
+    % Fill all edge elasticities
+    ElasticMatrix(ind) = Lambdas;
+    ElasticMatrix = ElasticMatrix + ElasticMatrix';
+    % Add Mus to main diagonsl
+    ElasticMatrix = ElasticMatrix+diag(Mus);
 end
