@@ -3,10 +3,50 @@ function [np, em, ReportTable]...
 % This function constructs a principal tree with NumNodes for a dataset X,
 % with elasticities for edges Lamda and Elasticities for stars Mu
 %
-% Possible parameters
-% 'InitNodePositions' - define the initial tree configuration
-% 'InitElasticMatrix' - define the initial tree configuration
-% 'ComputeMSEP' is non-zero to compute MSEP in ReportTable and zero otherwise.
+% Outputs
+%   np is positions of empbedded nodes.
+%   em is elastic matrix of the best selected new graph.
+%   ReportTable is table with 17 columns:
+%       STEP is number of iteration
+%       BARCODE is barcode in form ...S4|S3||N, where N is number of
+%           nodes, S3 is number of three stars, S4 (5,...) is number of
+%           four (five,...) stars.
+%       ENERGY is total energy of graph embedment (ENERGY = MSE + UE + UR)
+%       NNODES is number of nodes.
+%       NEDGES is number of edges (NEDGES = NNODES - 1).
+%       NRIBS is number of two stars (nodes with two otherr connected nodes). 
+%       NSTARS is number of stars with 3 and more leaves (nodes connected
+%           with central node).  
+%       NRAYS2 is sum of rays minus doubled number of nodes.
+%       MSE is mean square error or assessment of data approximation
+%           quality. 
+%       MSEP is project to edge ???
+%       FVE is fraction of explained variance. This value always between 0
+%           and 1. Greater value means higher quality of data approximation.
+%       FVEP is ???
+%       UE is elastic energy for edges stretching.
+%       UR is elastic energy of deviation from harmonicity.
+%       URN is UR * nodes 
+%       URN2 is UR * nodes^2
+%       URSD is standard deviation of UR???
+%
+%Inputs
+%   X - is the n-by-m data matrix. Each row corresponds to one data point.
+%   NumNodes maximal number of nodes in graph.
+%   Lambda is edge elasticity potential
+%   Mu is star elasticity potential
+%   varargin contains Name, Value pairs. Names can be: 
+%       'InitNodePositions' is k-by-m matrix of the initial tree node
+%           positions.
+%       'InitElasticMatrix' is initial elastic matrix: k-by-k symmetric
+%           matrix describing the connectivity and the elastic properties
+%           of the graph. Star elasticities (mu coefficients) are presented
+%           on the main diagonal (non-zero entries only for star centers),
+%           and the edge elasticity moduli are presented out of diagonal.
+%       'verbose' with 1/0 is to display/hide the energy values at each
+%           iteration and in the end of the process.
+%       Other Name/value pairs can be presented to transfer to called
+%       functions like ApplyOptimalGraphGrammarOpeation.
 
     % Parse 
     np=[];
@@ -53,7 +93,6 @@ function [np, em, ReportTable]...
         % two nodes
         if CurrentNumberOfNodes == 0
             edges = [1,2];
-            CurrentNumberOfNodes = 2;
         else
             edges = [(1:CurrentNumberOfNodes-1)', (2:CurrentNumberOfNodes)];
         end
@@ -89,7 +128,8 @@ function [np, em, ReportTable]...
     end
 
     if verbose
-        display(sprintf('BARCODE\tENERGY\tNNODES\tNEDGES\tNRIBS\tNSTARS\tNRAYS\tNRAYS2\tMSE MSEP\tFVE\tFVEP\tUE\tUR\tURN\tURN2\tURSD'));
+        display(sprintf(['BARCODE\tENERGY\tNNODES\tNEDGES\tNRIBS\tNSTARS'...
+            '\tNRAYS\tNRAYS2\tMSE MSEP\tFVE\tFVEP\tUE\tUR\tURN\tURN2\tURSD']));
     end
     % Initialise arrays for report
     if report

@@ -26,7 +26,7 @@ function [NodePositions2, ElasticMatrix2, partition, dists] = ...
 %       principal graphs (see https://github.com/auranic/Elastic-principal-graphs/wiki/Robust-principal-graphs)
 %   'LocalSearch' specifies local test for optimizing only a subset of the
 %       nodes. Integer number defines radius of neghbourhood to use.
-%   The following Name,Value pairs can be used in ????????????????
+%   The following Name,Value pairs can be used in called functions
 %   'MaxNumberOfIterations' with integer number which is maximum number of
 %       iterations for EM algorithm. 
 %   'eps' with real number which is minimal relative change in the node
@@ -61,12 +61,13 @@ function [NodePositions2, ElasticMatrix2, partition, dists] = ...
     end
     TrimmingRadius = TrimmingRadius .^ 2;
 
-    % We compute these things here in order not to recompute for each graph embedment
+    % We compute these things here in order not to recompute for each graph
+    % embedment 
     SquaredX = sum(X.^2, 2);
     partition = PartitionData(X, NodePositions, MaxBlockSize,...
         SquaredX, TrimmingRadius);
 
-    % Form new graphs to check
+    % Form new graphs to select the best
     NodePositionArrayAll = [];
     ElasticMatricesAll = [];
     NodeIndicesArrayAll = [];
@@ -80,15 +81,12 @@ function [NodePositions2, ElasticMatrix2, partition, dists] = ...
     end
 
     minEnergy = realmax;
-    k = -1;
 
     % Form data for local search
     if LocalSearch
         LocalInfo = struct();
         LocalInfo.Partition = [];
-        [LocalInfo.Partition] =...
-            PartitionData(X, NodePositions, MaxBlockSize,...
-            SquaredX, TrimmingRadius);
+        [LocalInfo.Partition] = partition;
     end
 
     % Test each possible continuation and select the best one
@@ -102,18 +100,19 @@ function [NodePositions2, ElasticMatrix2, partition, dists] = ...
         em = em1 + diag(mu);
         if LocalSearch
             NodeIndices = NodeIndicesArrayAll(:,i);
-            sd = fast_setdiff1(1:size(NodePositionArrayAll(:,:,i),1),NodeIndices);
-            if(size(sd,2)==0)
-                sd = size(NodePositions,1);
-                sd1 = GetNeighbourhoodOnTheGraph(ElasticMatrix,sd,1);
+            sd = fast_setdiff1(1:size(NodePositionArrayAll(:, :, i), 1),...
+                NodeIndices);
+            if size(sd, 2) == 0
+                sd = size(NodePositions, 1);
+                sd1 = GetNeighbourhoodOnTheGraph(ElasticMatrix, sd, 1);
                 sd = fast_setdiff1(sd1,sd);
             end
             LocalInfo.Nodes =...
-                GetNeighbourhoodOnTheGraph(ElasticMatricesAll(:,:,i),...
+                GetNeighbourhoodOnTheGraph(ElasticMatricesAll(:, :, i),...
                 sd, RadiusOfLocalSearch);
             [np, ElasticEnergy, part, dist] =...
                 PrimitiveElasticGraphEmbedment(X,...
-                NodePositionArrayAll(:,:,i), em,...
+                NodePositionArrayAll(:, :, i), em,...
                 'verbose', 0, 'SquaredX', SquaredX, 'Local', LocalInfo);
         else
             [np, ElasticEnergy, part, dist] =...
@@ -128,22 +127,21 @@ function [NodePositions2, ElasticMatrix2, partition, dists] = ...
             partition = part;
             dists = dist;
             ElasticMatrix2 = em;
-            k = i; 
         end
     end
 end
 
 function Z = fast_setdiff1(X,Y)
-if ~isempty(X)&&~isempty(Y)
-  X = X+1;
-  Y = Y+1;
-  check = false(1, max(max(X), max(Y)));
-  check(X) = true;
-  check(Y) = false;
-  Z = X(check(X));  
-  Z = Z-1;
-else
-  Z = X;
-end
+    if ~isempty(X) && ~isempty(Y)
+        X = X + 1;
+        Y = Y + 1;
+        check = false(1, max(max(X), max(Y)));
+        check(X) = true;
+        check(Y) = false;
+        Z = X(check(X));
+        Z = Z - 1;
+    else
+        Z = X;
+    end
 end
 
