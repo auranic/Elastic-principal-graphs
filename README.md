@@ -33,25 +33,28 @@ For more details of elastic principal graph theory read:
 
 ## Folders:
 
-core_algorithm 		- contains the core MATLAB code of the algorithm (self-contained)
+ElPiGraph/core_algorithm 		- contains the core MATLAB code of the algorithm (self-contained)
 
-core_algorithm_java	- old MATLAB wrapper of the Java code for ElPiGraph
+ElPiGraph/core_algorithm_java	- old MATLAB wrapper of the Java code for ElPiGraph
 
-docs			- some documentation on the method and the code
+ElPiGraph/docs			- some documentation on the method and the code
 
-examples		- some example applications of the method
+ElPiGraph/examples		- some example applications of the method
 
-simulations		- code generating synthetic datasets (e.g., with known branching topology)
+ElPiGraph/simulations		- code generating synthetic datasets (e.g., with known branching topology)
 
-test_code		- testing critical parts of the code (not needed for the package use)
+ElPiGraph/test_code		- testing critical parts of the code (not needed for the package use)
 
-test_data		- example datasets 
+ElPiGraph/test_data		- example datasets 
 
-utils			- utility functions for manipulating data and the graph (e.g., projection function)
+ElPiGraph/utils			- utility functions for manipulating data and the graph (e.g., projection function)
 
-visualization		- utility functions used for visualizing the results of the method application (such as applying metro map layout of the principal tree)
+ElPiGraph/visualization		- utility functions used for visualizing the results of the method application (such as applying metro map layout of the principal tree)
 
-## Functions in the root folder:
+MasterApplet 			- Java applet implementing several methods for constructing complex data approximators including elastic principal trees. The applet can be run as a standalone jar file.
+
+
+## Functions in the root "ElPiGraph.M" folder:
 
 computeElasticPrincipalCircle.m		- computes closed elastic principal curve with a given number of nodes
 
