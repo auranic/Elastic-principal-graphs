@@ -1,6 +1,6 @@
 function [ElasticEnergy, MSE, EP, RP] = ...
-    ComputePrimitiveGraphElasticEnergy(X, NodePositions, ElasticMatrix,...
-    partition, dists, BranchingFee)
+    ComputePrimitiveGraphElasticEnergy(NodePositions, ElasticMatrix,...
+    dists, ~)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Computes elastic energy of primitive elastic graph 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -14,11 +14,9 @@ function [ElasticEnergy, MSE, EP, RP] = ...
 %       ElsticMatrix(i,i) > 0 if node i is centre of star and zero otherwise
 %       ElsticMatrix(i,j) > 0 if there is edge between nodes i and j. In
 %       this case ElsticMatrix(i,j) is elasticity modulo of edge from i to j.
-%   partition is n-by-1 vector. partition(i) is number of node which is
-%       associated with data point X(i,:).
 %   dists is n-by-1 vector. dists(i) is squared distance from data point
 %       X(i,:) to node partition(i) or trimmed value.
-%   BranchingFee is now unused fee for branching control
+%   BranchingFee is now unused fee for branching control (depicted as ~)
 %
 %Outputs
 %   ElasticEnergy is total elastic energy 
@@ -27,36 +25,31 @@ function [ElasticEnergy, MSE, EP, RP] = ...
 %   RP is harmonicity potential 
 
     % Calculate MSE by usage dists
-    MSE = sum(dists)/size(dists,1);
+    MSE = sum(dists) / size(dists, 1);
 
-    RP = 0;
-
+    % Decompose ElasticMatrix
     Mu = diag(ElasticMatrix);
     Lambda = triu(ElasticMatrix,1);
     StarCenterIndices = find(Mu>0);
-
+    
+    % Calculate edge potential
     [row,col] = find(Lambda);
-    
-
-% %%%%%%%%%%%%% Debug!!!
-cnt = sum(Lambda+Lambda'>0);
-ind = cnt == 1;
-if sum(Mu(ind))>0
-    fprintf('n = %d\n',length(Mu));
-end
-    
     dev = NodePositions(row,:)-NodePositions(col,:);
     l = Lambda(Lambda>0);
     EP = sum(l(:).*sum(dev.^2,2));
 
-    Lambda = Lambda + Lambda';
+    % Form indeces
+    indL = (Lambda + Lambda') > 0;
 
+    % Calculate harmonicity potential
+    RP = 0;
     for i=1:size(StarCenterIndices,1)
-        leafs = find(Lambda(:,StarCenterIndices(i))>0);
-        K = size(leafs,1);
-        dev = NodePositions(StarCenterIndices(i),:)-1/K*sum(NodePositions(leafs,:));
-        RP = RP+Mu(StarCenterIndices(i))*(dev*dev');
+        leaves = indL(:,StarCenterIndices(i));
+        K = sum(leaves);
+        dev = NodePositions(StarCenterIndices(i),:)...
+            - sum(NodePositions(leaves, :)) / K;
+        RP = RP + Mu(StarCenterIndices(i)) * sum(dev .^ 2);
     end
-
+    % Toatal energy is the sum.
     ElasticEnergy = MSE + EP + RP;
 end

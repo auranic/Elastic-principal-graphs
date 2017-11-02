@@ -1,5 +1,5 @@
 function [NodePositionArray, ElasticMatrices, NodeIndicesArray] =...
-    GraphGrammarOperation(NodePositions, ElasticMatrix, X, type, SqX)
+    GraphGrammarOperation(NodePositions, ElasticMatrix, X, type, partition)
 %
 % This is the core function for application of graph grammar approach for
 % constructing primitive elastic principal graphs
@@ -8,46 +8,51 @@ function [NodePositionArray, ElasticMatrices, NodeIndicesArray] =...
 % applies a graph grammar operation of type type
 % 
 % Input arguments:
-% NodePositions - position of nodes of the primitive elastic graph
-% ElasticMatrix - matrix with elasticity coefficients (lambdas for edges,
-% and star elasticities along the diagonal
-% X - is dataset which is to be approximated by the graph
-% type - one of the operation types:
-%   'addnode2node'
-%   'removenode'
-%   'bisectedge'
-%   'shrinkedge'
-% SqX is column vector of squared lengths of data vectors
+%   NodePositions - position of nodes of the primitive elastic graph
+%   ElasticMatrix - matrix with elasticity coefficients (lambdas for edges,
+%       and star elasticities along the diagonal
+%   X - is dataset which is to be approximated by the graph
+%   type - one of the operation types:
+%       'addnode2node'      adds a node to each graph node
+%       'removenode'        removes terminal node
+%       'bisectedge'        adds nodt to the middle of each edge
+%       'shrinkedge'        removes edge and glues two ends of this edge
+%   partition is n-by-1 vector. partition(i) is number of node which is
+%       associated with data point X(i,:).
 %
 % Outputs:
-% NodePositionArray - 3d array with dimensions
-% [node_number, NodePosition, graph_number], represents all generated node
-% configurations
-% ElasticMatrices - 3d array with dimensions 
-% [node_number, node_number, graph_number], 
-% represents all generated elasticity matrices 
+%   NodePositionArray - 3d array with dimensions
+%       [node_number, NodePosition, graph_number], represents all generated
+%       node configurations.
+%   ElasticMatrices - 3d array with dimensions 
+%       [node_number, node_number, graph_number], represents all generated
+%       elasticity matrices  
+%   NodeIndicesArray in the version 1.1 with a possibility of local search,
+%       each operation reports NodeIndices which specifies how the nodes in
+%       the newly generated graph are related to the nodes in the initial
+%       graph, and contains zeros for new nodes. 
 %
-%% in the version 1.1 with a possibility of local search, each operation reports NodeIndices
-%% which specifies how the nodes in the newly generated graph are related to the nodes
-%% in the initial graph, and contains zeros for new nodes.
-
     switch type
         case 'addnode2node'
-            [NodePositionArray, ElasticMatrices, NodeIndicesArray] = AddNode2Node(NodePositions,ElasticMatrix,X,SqX);
+            [NodePositionArray, ElasticMatrices, NodeIndicesArray] =...
+                AddNode2Node(NodePositions, ElasticMatrix, X, partition);
         case 'removenode'
-            [NodePositionArray, ElasticMatrices, NodeIndicesArray] = RemoveNode(NodePositions,ElasticMatrix);
+            [NodePositionArray, ElasticMatrices, NodeIndicesArray] =...
+                RemoveNode(NodePositions, ElasticMatrix);
         case 'bisectedge'
-            [NodePositionArray, ElasticMatrices, NodeIndicesArray] = BisectEdge(NodePositions,ElasticMatrix);
+            [NodePositionArray, ElasticMatrices, NodeIndicesArray] =...
+                BisectEdge(NodePositions, ElasticMatrix);
         case 'shrinkedge'
-            [NodePositionArray, ElasticMatrices, NodeIndicesArray] = ShrinkEdge(NodePositions,ElasticMatrix);
+            [NodePositionArray, ElasticMatrices, NodeIndicesArray] =...
+                ShrinkEdge(NodePositions, ElasticMatrix);
         otherwise
-            display(sprintf('ERROR: operation %s is not defined',type));
+            error('ERROR: operation %s is not defined',type);
     end
 end
 
 
 function [NodePositionArray, ElasticMatrices, NodeIndicesArray]...
-    = AddNode2Node(NodePositions, ElasticMatrix, X, SqX)
+    = AddNode2Node(NodePositions, ElasticMatrix, X, partition)
 %
 % This grammar operation adds a node to each graph node
 % The positions of the node is chosen as a linear extrapolation for a leaf
@@ -57,68 +62,64 @@ function [NodePositionArray, ElasticMatrices, NodeIndicesArray]...
 % as the data point giving the minimum local MSE for a star (without any optimization).
 
     NNodes = size(NodePositions,1);
+    NNp1 = NNodes + 1;
     NumberOfGraphs = NNodes;
-    NodePositionArray = zeros(NNodes + 1, size(NodePositions, 2), NumberOfGraphs);
-    ElasticMatrices = zeros(NNodes + 1, NNodes + 1, NumberOfGraphs);
+    NodePositionArray = zeros(NNp1, size(NodePositions, 2), NumberOfGraphs);
+    ElasticMatrices = zeros(NNp1, NNp1, NumberOfGraphs);
+    NodeIndicesArray = zeros(NNp1, NumberOfGraphs);
     Mus = diag(ElasticMatrix);
     L = ElasticMatrix - diag(Mus);
-    Connectivities = sum(L > 0);
+    indL = L > 0;
+    Connectivities = sum(indL);
+    assoc = accumarray(partition, 1);
 
-    k=1;
-    partition = PartitionData(X, NodePositions, 100000, SqX, Inf);
-        
-for i=1:NNodes
-     
-    meanLambda = mean(L(i,L(i,:)>0));
+    % Create prototypes for new NodePositions, ElasticMatrix and inds
+    NPProt = zeros(NNp1, size(NodePositions, 2));
+    NPProt(1:NNodes,:) = NodePositions;
+    EMProt = zeros(NNp1, NNp1);
+    EMProt(1:NNodes, 1:NNodes) = ElasticMatrix;
+    NIProt = [1:NNodes,0];
+    
+    % Main loop
+    for i=1:NNodes
+        % Compute mean edge elastisity for edges with node i 
+        meanLambda = mean(L(i,indL(i,:)));
+        % Put prototypes to corresponding places
+        NodePositionArray(:, :, i) = NPProt;
+        ElasticMatrices(:, :, i) = EMProt;
+        NodeIndicesArray(:, i) = NIProt;
+        % Add edge to elasticity matrix
+        ElasticMatrices(NNp1, i, i) = meanLambda;
+        ElasticMatrices(i, NNp1, i) = meanLambda;
 
-    if(Connectivities(i)==1)
-        ineighbour = find(L(i,:)>0);
-        NewNodePosition = 2 * NodePositions(i, :) - NodePositions(ineighbour, :);
-        [np,em,inds] = f_add_nonconnected_node(NodePositions, ElasticMatrix, NewNodePosition);
-        nn = size(np, 1);
-        [em] = f_add_edge(em,i,nn,ElasticMatrix(i,ineighbour));
-        em(i,i) = ElasticMatrix(ineighbour,ineighbour);
-        NodePositionArray(:,:,k) = np(:,:);
-        ElasticMatrices(:,:,k) = em(:,:);
-        NodeIndicesArray(:,k) = inds;
-        k=k+1;        
-    else
-        
-        [nplocal,emlocal,inds] = f_get_star(NodePositions,ElasticMatrix,i);        
-        %indlocal = [];
-        %for l=1:size(inds,2)
-        %   indlocal = [indlocal; find(partition==inds(l))];
-        %end
-         indlocal=find(partition==i);
-         xlocal = X(indlocal,:);
-
-        if size(xlocal,1)==0
-            % empty star
-            NodeNewPosition = mean(nplocal);
+        if(Connectivities(i)==1)
+            % Add node to terminal node
+            ineighbour = find(indL(i,:));
+            % Calculate new node position
+            NewNodePosition = 2 * NodePositions(i, :)...
+                - NodePositions(ineighbour, :);
+            % Complete elasticity matrix
+            ElasticMatrices(i, i, i) = Mus(ineighbour);
         else
-            
-        minMSE = realmax;
-        m = -1;
-        
-        % mean point of the central cluster - seems to work the best
-        NodeNewPosition = mean(xlocal);
-        
+            % Add node to star
+            % If number of data points associated with star centre is zero
+            if assoc(i) == 0
+                % then select the mean of all leaves as new position
+                NewNodePosition = mean(NodePositions(indL(:, i), :));
+            else
+                % otherwise take the mean of points associated with central
+                % node.
+                NewNodePosition = mean(X(partition == i, :));
+            end 
         end
-        
-        [np,em,inds] = f_add_nonconnected_node(NodePositions,ElasticMatrix,NodeNewPosition);
-        nn = size(np,1);
-        [em] = f_add_edge(em,i,nn,meanLambda);
-        NodePositionArray(:,:,k) = np(:,:);
-        ElasticMatrices(:,:,k) = em(:,:);
-        NodeIndicesArray(:,k) = inds;
-        k=k+1;
+        % Fill NodePosition
+        NodePositionArray(NNp1,:, i) = NewNodePosition;
     end
 end
 
-end
 
-
-function [NodePositionArray, ElasticMatrices, NodeIndicesArray] = BisectEdge(NodePositions,ElasticMatrix)
+function [NodePositionArray, ElasticMatrices, NodeIndicesArray] =...
+    BisectEdge(NodePositions, ElasticMatrix)
 %
 % This grammar operation inserts a node inside the middle of each edge
 % The elasticity of the edges do not change
@@ -130,63 +131,83 @@ function [NodePositionArray, ElasticMatrices, NodeIndicesArray] = BisectEdge(Nod
 % if one starts from a single edge, the star elasticities should be on
 % one of two elements in the diagoal of the ElasticMatrix 
 
-[Edges,Lambdas,Mus] = DecodeElasticMatrix(ElasticMatrix);
-NumberOfGraphs = size(Edges,1);
-NNodes = size(NodePositions,1);
-
-NodePositionArray = zeros(NNodes+1,size(NodePositions,2),NumberOfGraphs);
-ElasticMatrices = zeros(NNodes+1,NNodes+1,NumberOfGraphs);
-
-k=1;
-for i=1:size(Edges,1)
-   NewNodePosition = (NodePositions(Edges(i,1),:)+NodePositions(Edges(i,2),:))/2;
-   [np,em, inds] = f_add_nonconnected_node(NodePositions,ElasticMatrix,NewNodePosition);
-   nn = size(np,1);
-   lambda = ElasticMatrix(Edges(i,1),Edges(i,2));
-   em = f_removeedge(em,Edges(i,1),Edges(i,2));
-   em = f_add_edge(em,Edges(i,1),nn,lambda);
-   em = f_add_edge(em,Edges(i,2),nn,lambda);
-   mu1 = ElasticMatrix(Edges(i,1),Edges(i,1));
-   mu2 = ElasticMatrix(Edges(i,2),Edges(i,2));
-   if mu1>0&mu2>0
-       em(nn,nn) = (mu1+mu2)/2;
-   else
-       em(nn,nn) = max(mu1,mu2);
-   end
-   NodePositionArray(:,:,k) = np(:,:);
-   ElasticMatrices(:,:,k) = em(:,:);
-   NodeIndicesArray(:,k) = inds;
-   k=k+1;
-end
-
-end
-
-
-function [NodePositionArray, ElasticMatrices, NodeIndicesArray] = RemoveNode(NodePositions,ElasticMatrix)
-%
-% This grammar operation removes a leaf node (connectivity==1)
-%
-
-Mus = diag(ElasticMatrix);
-L = ElasticMatrix - diag(Mus);
-Connectivities = sum(L>0);
-NNodes = size(NodePositions,1);
-
-NumberOfGraphs = sum(Connectivities==1);
-NodePositionArray = zeros(NNodes-1,size(NodePositions,2),NumberOfGraphs);
-ElasticMatrices = zeros(NNodes-1,NNodes-1,NumberOfGraphs);
-
-k=1;
-for i=1:size(Connectivities,2)
-    if(Connectivities(i)==1)
-        [np,em,inds] = f_remove_node(NodePositions,ElasticMatrix,i);
-        NodePositionArray(:,:,k) = np(:,:);
-        ElasticMatrices(:,:,k) = em(:,:);
-        NodeIndicesArray(:,k) = inds;
-        k=k+1;
+    % Decompose Elastic Matrix: Mus
+    Mus = diag(ElasticMatrix);
+    % Get list of edges
+    [start, stop] = find(triu(ElasticMatrix,1));
+    % Define some constants
+    NumberOfGraphs = length(start);
+    NNodes = size(NodePositions,1);
+    NNp1 = NNodes + 1;
+    % Preallocate arrays
+    NodePositionArray = zeros(NNp1, size(NodePositions, 2), NumberOfGraphs);
+    ElasticMatrices = zeros(NNp1, NNp1, NumberOfGraphs);
+    NodeIndicesArray = zeros(NNp1, NumberOfGraphs);
+    % Create prototypes for new NodePositions, ElasticMatrix and inds
+    NPProt = zeros(NNp1, size(NodePositions, 2));
+    NPProt(1:NNodes, :) = NodePositions;
+    EMProt = zeros(NNp1, NNp1);
+    EMProt(1:NNodes, 1:NNodes) = ElasticMatrix;
+    NIProt = [1:NNodes,0];
+    % Main loop
+    for i=1:NumberOfGraphs
+        NewNodePosition = (NodePositions(start(i), :)...
+            + NodePositions(stop(i), :)) / 2;
+        % Put prototypes to corresponding places
+        NodePositionArray(:, :, i) = NPProt;
+        ElasticMatrices(:, :, i) = EMProt;
+        NodeIndicesArray(:, i) = NIProt;
+        % Fill NodePosition
+        NodePositionArray(NNp1,:, i) = NewNodePosition;
+        %Correct ElasticMatrix
+        lambda = ElasticMatrix(start(i), stop(i));
+        % Remove edge
+        ElasticMatrices(start(i), stop(i), i) = 0;
+        ElasticMatrices(stop(i), start(i), i) = 0;
+        % Add two edges
+        ElasticMatrices(start(i), NNp1, i) = lambda;
+        ElasticMatrices(NNp1, start(i), i) = lambda;
+        ElasticMatrices(NNp1, stop(i), i) = lambda;
+        ElasticMatrices(stop(i), NNp1, i) = lambda;
+        % Define Mus of edge nodes:
+        mu1 = Mus(start(i));
+        mu2 = Mus(stop(i));
+       if mu1 > 0 && mu2 > 0
+           ElasticMatrices(NNp1, NNp1, i) = (mu1 + mu2) / 2;
+       else
+           ElasticMatrices(NNp1, NNp1, i) = max(mu1, mu2);
+       end
     end
 end
 
+
+function [NodePositionArray, ElasticMatrices, NodeIndicesArray] =...
+    RemoveNode(NodePositions, ElasticMatrix)
+%
+% This grammar operation removes a leaf node (connectivity==1)
+%
+    % Decompose ElasticMatrix
+    Mus = diag(ElasticMatrix);
+    L = ElasticMatrix - diag(Mus);
+    Connectivities = sum(L > 0);
+    % Define sizes
+    NNodes = size(NodePositions,1);
+    NumberOfGraphs = sum(Connectivities==1);
+    % Preallocate arrays
+    NodePositionArray = zeros(NNodes-1, size(NodePositions,2), NumberOfGraphs);
+    ElasticMatrices = zeros(NNodes-1, NNodes-1, NumberOfGraphs);
+    NodeIndicesArray = zeros(NNodes-1, NumberOfGraphs);
+    k=1;
+    for i=1:length(Connectivities)
+        if Connectivities(i) == 1
+            % It is terminal node. Remove it
+            newinds = [1:(i - 1),(i + 1):NNodes];
+            NodePositionArray(:, :, k) = NodePositions(newinds, :);
+            ElasticMatrices(:, :, k) = ElasticMatrix(newinds, newinds);
+            NodeIndicesArray(:, k) = newinds;
+            k=k+1;
+        end
+    end
 end
 
 function [NodePositionArray, ElasticMatrices, NodeIndicesArray] = ShrinkEdge(NodePositions,ElasticMatrix)
@@ -199,92 +220,67 @@ function [NodePositionArray, ElasticMatrices, NodeIndicesArray] = ShrinkEdge(Nod
 % The elasticity of the new formed star is the average of two star
 % elasticities.
 %
+    % Decompose ElasticMatrix
+    Mus = diag(ElasticMatrix);
+    L = ElasticMatrix - diag(Mus);
+    Connectivities = (sum(L > 0))';
+    % Get list of edges
+    [start, stop] = find(triu(ElasticMatrix,1));
+    % Define sizes
+    NNodes = size(NodePositions,1);
+    %Identify edges with minimal connectivity greater than 1
+    ind = min([Connectivities(start'),Connectivities(stop')],[],2);
+    ind = ind > 1;
+    start = start(ind);
+    stop = stop(ind);
+    %Calcualte number of graphs
+    NumberOfGraphs = length(start);
+    % Preallocate arrays
+    NodePositionArray = zeros(NNodes-1, size(NodePositions,2), NumberOfGraphs);
+    ElasticMatrices = zeros(NNodes-1, NNodes-1, NumberOfGraphs);
+    NodeIndicesArray = zeros(NNodes-1, NumberOfGraphs);
 
-Mus = diag(ElasticMatrix);
-L = ElasticMatrix - diag(Mus);
-Connectivities = sum(L>0);
-NNodes = size(NodePositions,1);
-
-[Edges,Lambdas,Mus] = DecodeElasticMatrix(ElasticMatrix);
-NumberOfGraphs = 0;
-for i=1:size(Edges,1)
-    if(Connectivities(Edges(i,1))>1)&(Connectivities(Edges(i,2))>1)
-        NumberOfGraphs=NumberOfGraphs+1;
+    for i=1:length(stop)
+        %Create copy of elastic matrix
+        em = ElasticMatrix;
+        % Reattaches all edges connected with stop(i) to start(i)
+        % and make a new star with an elasticity average of two merged stars
+        em(start(i),:) = max(L(start(i), :), L(stop(i), :));
+        em(:,start(i)) = max(L(:, start(i)), L(:, stop(i)));
+        em(start(i),start(i)) = (Mus(start(i)) + Mus(stop(i))) / 2;
+        % Create copy of node positions
+        np = NodePositions;
+        % Modify node start(i)
+        np(start(i), :) = (np(start(i), :) + np(stop(i), :)) / 2;
+        % Form index for retained nodes and extract corresponding part of 
+        % node positions and elastic matrix
+        newinds = [1:(stop(i)-1),(stop(i) + 1):NNodes];
+        NodePositionArray(:, :, i) = np(newinds, :);
+        ElasticMatrices(:, :, i) = em(newinds, newinds);
+        NodeIndicesArray(:, i) = newinds;
     end
 end
 
-NodePositionArray = zeros(NNodes-1,size(NodePositions,2),NumberOfGraphs);
-ElasticMatrices = zeros(NNodes-1,NNodes-1,NumberOfGraphs);
-NodeIndicesArray = zeros(NNodes-1,NumberOfGraphs);
-
-k=1;
-for i=1:size(Edges,1)
-    if(Connectivities(Edges(i,1))>1)&(Connectivities(Edges(i,2))>1)
-        [em] = f_reattach_edges(ElasticMatrix,Edges(i,1),Edges(i,2));
-        temp = NodePositions(Edges(i,2),:);
-        [np,em,inds] = f_remove_node(NodePositions,em,Edges(i,2));
-        np(Edges(i,1),:) = (np(Edges(i,1),:)+temp)/2;
-        NodePositionArray(:,:,k) = np;
-        ElasticMatrices(:,:,k) = em(:,:);
-        NodeIndicesArray(:,k) = inds;
-        k=k+1;
-    end
-end
-
-end
 
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% some elementary graph transformations
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [NodePositions2, ElasticMatrix2, NodeIndices] = f_remove_node(NodePositions,ElasticMatrix,NodeNumber)
-% remove from the graph node number NodeNumber
-    newinds = [1:NodeNumber-1,NodeNumber+1:size(NodePositions,1)];
-    NodePositions2 = NodePositions(newinds,:);
-    ElasticMatrix2 = ElasticMatrix(newinds,newinds);
-    NodeIndices = newinds;
-end
-
-function [ElasticMatrix2] = f_reattach_edges(ElasticMatrix,NodeNumber1,NodeNumber2)
-% reattaches all edges connected with NodeNumber2 to NodeNumber1
-% and make a new star with an elasticity average of two merged stars
-ElasticMatrix2(:,:) = ElasticMatrix;
-mus = diag(ElasticMatrix);
-lm = ElasticMatrix-diag(mus);
-ElasticMatrix2(NodeNumber1,:) = max(lm(NodeNumber1,:),lm(NodeNumber2,:));
-ElasticMatrix2(:,NodeNumber1) = max(lm(:,NodeNumber1),lm(:,NodeNumber2));
-ElasticMatrix2(NodeNumber1,NodeNumber1) = (ElasticMatrix(NodeNumber1,NodeNumber1)+ElasticMatrix(NodeNumber2,NodeNumber2))/2;
-end
-
-function [NodePositions2, ElasticMatrix2, NodeIndices] =...
-    f_add_nonconnected_node(NodePositions, ElasticMatrix, NewNodePosition)
-% Add new node without connections
-    NodePositions2(:,:) = NodePositions(:,:);
-    NodePositions2(size(NodePositions,1)+1,:) = NewNodePosition(:); 
-    ElasticMatrix2(:,:) = ElasticMatrix(:,:);
-    ElasticMatrix2(size(NodePositions2,1),:) = zeros(size(NodePositions,1),1);
-    ElasticMatrix2(:,size(NodePositions2,1)) = zeros(1,size(NodePositions2,1));
-    NodeIndices = [1:size(NodePositions,1),0];
-end
-
-function [ElasticMatrix2] = f_removeedge(ElasticMatrix, Node1, Node2)
-% remove edge connecting Node1 and Node 2
-    ElasticMatrix2(:,:) = ElasticMatrix(:,:);
-    ElasticMatrix2(Node1,Node2) = 0;
-    ElasticMatrix2(Node2,Node1) = 0;
-end
-
-function [ElasticMatrix2] = f_add_edge(ElasticMatrix, Node1, Node2, lambda)
-% connects Node1 and Node 2 by an edge with elasticity lambda
-    ElasticMatrix2(:,:) = ElasticMatrix(:,:);
-    ElasticMatrix2(Node1,Node2) = lambda;
-    ElasticMatrix2(Node2,Node1) = lambda;
-end
-
-function [NodePositions2, ElasticMatrix2, NodeIndices] = f_get_star(NodePositions,ElasticMatrix,NodeCenter)
-% extracts a star from the graph with the center in NodeCenter
-NodeIndices = find(ElasticMatrix(NodeCenter,:)>0);
-NodePositions2(:,:) = NodePositions(NodeIndices,:);
-ElasticMatrix2(:,:) = ElasticMatrix(NodeIndices,NodeIndices);
-end
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % some elementary graph transformations
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% function [NodePositions2, ElasticMatrix2, NodeIndices] = f_remove_node(NodePositions,ElasticMatrix,NodeNumber)
+% % remove from the graph node number NodeNumber
+%     newinds = [1:NodeNumber-1,NodeNumber+1:size(NodePositions,1)];
+%     NodePositions2 = NodePositions(newinds,:);
+%     ElasticMatrix2 = ElasticMatrix(newinds,newinds);
+%     NodeIndices = newinds;
+% end
+% 
+% function [ElasticMatrix2] = f_reattach_edges(ElasticMatrix,NodeNumber1,NodeNumber2)
+% % reattaches all edges connected with NodeNumber2 to NodeNumber1
+% % and make a new star with an elasticity average of two merged stars
+% ElasticMatrix2(:,:) = ElasticMatrix;
+% mus = diag(ElasticMatrix);
+% lm = ElasticMatrix-diag(mus);
+% ElasticMatrix2(NodeNumber1,:) = max(lm(NodeNumber1,:),lm(NodeNumber2,:));
+% ElasticMatrix2(:,NodeNumber1) = max(lm(:,NodeNumber1),lm(:,NodeNumber2));
+% ElasticMatrix2(NodeNumber1,NodeNumber1) = (ElasticMatrix(NodeNumber1,NodeNumber1)+ElasticMatrix(NodeNumber2,NodeNumber2))/2;
+% end

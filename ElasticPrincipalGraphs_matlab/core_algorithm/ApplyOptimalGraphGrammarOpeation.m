@@ -63,6 +63,8 @@ function [NodePositions2, ElasticMatrix2, partition, dists] = ...
 
     % We compute these things here in order not to recompute for each graph embedment
     SquaredX = sum(X.^2, 2);
+    partition = PartitionData(X, NodePositions, MaxBlockSize,...
+        SquaredX, TrimmingRadius);
 
     % Form new graphs to check
     NodePositionArrayAll = [];
@@ -71,7 +73,7 @@ function [NodePositions2, ElasticMatrix2, partition, dists] = ...
     for i=1:size(operationtypes,1)
         [NodePositionArray, ElasticMatrices, NodeIndicesArray] =... 
             GraphGrammarOperation(NodePositions, ElasticMatrix,...
-                X, char(operationtypes(i)), SquaredX);
+                X, char(operationtypes(i)), partition);
         NodePositionArrayAll = cat(3, NodePositionArrayAll, NodePositionArray);
         ElasticMatricesAll = cat(3, ElasticMatricesAll, ElasticMatrices);
         NodeIndicesArrayAll = cat(2, NodeIndicesArrayAll, NodeIndicesArray);
