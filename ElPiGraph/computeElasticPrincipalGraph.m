@@ -66,11 +66,14 @@ function [NodePositions, Edges, ReportTable] =...
 %           NRAYS2 is sum of rays minus doubled number of nodes.
 %           MSE is mean square error or assessment of data approximation
 %               quality.
-%           MSEP is project to edge ???
+%           MSEP is mean square error of data approximation when the data points are
+%               projected to edges rather than graph nodes
 %           FVE is fraction of explained variance. This value always
 %               between 0 and 1. Greater value means higher quality of
 %               data approximation.
-%           FVEP is ???
+%           FVEP is the fraction of explained variance, when the projection
+%               of a data point is computed on an edge of the graph and not
+%               a node.
 %           UE is elastic energy for edges stretching.
 %           UR is elastic energy of deviation from harmonicity.
 %           URN is UR * nodes 
@@ -86,10 +89,8 @@ function [NodePositions, Edges, ReportTable] =...
 %       'Mu' is penalty coefficient for deviation from harmonicity.
 %           Coefficient is positive double number. If RP is vector then see
 %           Several epoch strategies below.
-%       'TrimRadius' is robust or trimming radius. To perform non robust
-%           algorithm specify TrimRadius = 0. If TrimRadius is array then
-%           each value is used for separate epoch. see Several epoch
-%           strategies below. 
+%       'TrimmingRadius' is robust or trimming radius. To perform non robust
+%           algorithm specify TrimmingRadius = 0. 
 %       'InitGraph' is structure with two elements: InitNodes and
 %           InitEdges. This parameter can be used for continuation of graph
 %           construction:
@@ -101,7 +102,7 @@ function [NodePositions, Edges, ReportTable] =...
 %                       computeElasticPrincipalTree(data,10,'RP'=0.1,...
 %                       'InitGraph',struct('InitNodes',NodePositions,...
 %                       'InitEdges',Edges));
-%       'Reduce dimension' is used for dimensionality reduction by
+%       'ReduceDimension' is used for dimensionality reduction by
 %           principal components. There are tree possible values:
 %               Integer value K. This value must be positive integer being
 %                   not greater than m (number of columns in matrix data).
@@ -118,7 +119,7 @@ function [NodePositions, Edges, ReportTable] =...
 %                   indices of principal components to use.
 %       'Plots' is integer number which specifies set of plots to draw:
 %           1 for "Accuracy/Complexity plot" 
-%           2 for "PCA view on principal tree"
+%           2 for "PCA view on principal graph"
 %           4 for "Metro map layout of the principal tree"
 %           8 for "MSE and Elastic energy plot"
 %           To specify several plots it is necessary to use sum of listed

@@ -54,7 +54,7 @@ ElPiGraph/visualization		- utility functions used for visualizing the results of
 MasterApplet 			- Java applet implementing several methods for constructing complex data approximators including elastic principal trees. The applet can be run as a standalone jar file.
 
 
-## Functions in the root "ElPiGraph.M" folder:
+## Functions in the root "ElPiGraph" folder:
 
 computeElasticPrincipalCircle.m		- computes closed elastic principal curve with a given number of nodes
 

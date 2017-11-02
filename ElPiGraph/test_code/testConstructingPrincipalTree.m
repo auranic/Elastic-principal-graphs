@@ -20,12 +20,14 @@ TimeForFitting=[];
 NumberOfIterations=[];
 argCount = zeros(1,2);
 
-variability = 0;
+variability = 1;
 drawing = 0;
+
+X = load('./test_data/tree23/tree23.data');
 
 if variability == 1
     %X = load('./test_data/iris/iris.data');
-    X = load('./test_data/tree23/tree23.data');
+    
     %X = load('./test_data/circle/simple_circle.data');
     %X = load('./test_data/mosaic/mosaic.txt');
     %X = load('C:/Datas/ElGraph_Matlab/competitors/MERLOT/cells.txt');
@@ -39,7 +41,7 @@ if variability == 1
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Inflation
     % inflate the number of points
-    inflationFactor = 100;
+    inflationFactor = 10;
     X1 = zeros(size(X,1)*inflationFactor,size(X,2));
     k=1;
     STDV = std(X);
