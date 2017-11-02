@@ -1,5 +1,5 @@
 function [NodeClusterCenters, NodeClusterRelativeSize] =...
-    ComputeWeightedAverage(X, partition, PointWeights, NumberOfNodes)
+    ComputeWeightedAverageOld(X, partition, PointWeights, NumberOfNodes)
 %ComputeWeightedAverage calculate NodeClusterCentres as weighted averages
 %of points from matrix X.
 %

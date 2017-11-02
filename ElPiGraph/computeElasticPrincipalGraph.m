@@ -1,5 +1,5 @@
 function [NodePositions, Edges, ReportTable] =...
-computeElasticPrincipalGraph(data,NumNodes,varargin)
+    computeElasticPrincipalGraph(data,NumNodes,varargin)
 %computeElasticPrincipalGraph calculate elastic principal graph. 
 %If grammar parameters 'GrowGrammar' and 'ShrinkGrammar' are not specified
 %then by default the algorithm constructs a principal tree with default
@@ -133,8 +133,8 @@ computeElasticPrincipalGraph(data,NumNodes,varargin)
 %   [NodePositions, Edges, ReportTable] =...
 %       computeElasticPrincipalGraph(table2array(iris(:,2:end)),20);
 %
-
-setallpaths;
+    % Can be removed if all paths are set before.
+    setallpaths;
 
     % Parse optional argumentes
     reduceDimension = 0;
@@ -142,39 +142,38 @@ setallpaths;
     drawAccuracyComplexity = true;
     drawPCAView = true;
     drawEnergy = true;
-    
+    graphinitialized = 0;
     Lambda = 0.01;
     Mu = 0.1;
-
+    InitStruct = [];
     for i=1:2:length(varargin)
-        if strcmpi(varargin{i},'ReduceDimension')
+        if strcmpi(varargin{i}, 'ReduceDimension')
             reduceDimension = 1;
-            newDimension = varargin{i+1};
-        elseif strcmpi(varargin{i},'Plots')
-            tmp = uint8(varargin{i+1});
-            drawEnergy = bitand(tmp,8)>0;
-            drawPCAView = bitand(tmp,2)>0;
-            drawAccuracyComplexity = bitand(tmp,1)>0;
-        elseif strcmpi(varargin{i},'Lambda')
-	    Lambda = varargin{i+1}; 	
-        elseif strcmpi(varargin{i},'Mu')
-	    Mu = varargin{i+1}; 	
+            newDimension = varargin{i + 1};
+        elseif strcmpi(varargin{i}, 'Plots')
+            tmp = uint8(varargin{i + 1});
+            drawEnergy = bitand(tmp, 8)>0;
+            drawPCAView = bitand(tmp, 2)>0;
+            drawAccuracyComplexity = bitand(tmp, 1)>0;
+        elseif strcmpi(varargin{i}, 'Lambda')
+            Lambda = varargin{i + 1}; 	
+        elseif strcmpi(varargin{i}, 'Mu')
+            Mu = varargin{i + 1}; 	
+        elseif strcmpi(varargin{i}, 'InitGraph')
+            InitStruct = varargin{i + 1};
         end
     end
-    % graph initialization is done after all parameters set
-    graphinitialized = 0;
-    for i=1:2:length(varargin)
-        if strcmpi(varargin{i},'InitGraph')
-        InitStruct = varargin{i+1};
+    
+    if ~isempty(InitStruct)
+        % Initialise graph if it is necessary
         np = InitStruct.InitNodes;
         ed = InitStruct.InitEdges;
-        em = MakeUniformElasticMatrix(ed,Lambda,Mu);
+        em = MakeUniformElasticMatrix(ed, Lambda, Mu);
         graphinitialized = 1;
-        end
     end
 
     mv = mean(data);
-    data_centered = bsxfun(@minus,data,mv);
+    data_centered = bsxfun(@minus, data, mv);
 
     [vglobal, uglobal, explainedVariances] = pca(data_centered);
     if reduceDimension
@@ -199,31 +198,34 @@ setallpaths;
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Computing the graph
 
     if ~graphinitialized
-    [NodePositions,ElasticMatrix,ReportTable] =...
-        ElPrincGraph(data_centered,NumNodes,Lambda,Mu,varargin{:});
+        [NodePositions, ElasticMatrix, ReportTable] =...
+            ElPrincGraph(data_centered, NumNodes, Lambda, Mu, varargin{:});
     else
-    [NodePositions,ElasticMatrix,ReportTable] =...
-        ElPrincGraph(data_centered,NumNodes,Lambda,Mu,'InitNodePositions',np,'InitElasticMatrix',em,varargin{:});
+        [NodePositions, ElasticMatrix, ReportTable] =...
+            ElPrincGraph(data_centered, NumNodes, Lambda, Mu,...
+            'InitNodePositions', np, 'InitElasticMatrix', em, varargin{:});
     end
-    Edges = DecodeElasticMatrix(ElasticMatrix);
+    
+    [row, col] = find(triu(ElasticMatrix, 1));
+    Edges = [row, col];
 
     %%%%%%%%%%%%%%%%%%%%%%%% Preparing the output arguments
     if reduceDimension
         %Project nodes back into the initial, non-reduced space
-        NodePositions = NodePositions*vglobal(:,indPC)';
+        NodePositions = NodePositions * vglobal(:, indPC)';
     end
-    NodePositions = bsxfun(@plus,NodePositions,mv);
+    NodePositions = bsxfun(@plus, NodePositions, mv);
 
     %%%%%%%%%%%%%%%%%%%%%%%%  Plots of MSE, elastic energy optimization
     if drawEnergy
         plotMSDEnergyPlot(ReportTable,explainedVariances);
-        set(gcf,'Position',[5   102   499   171]);
+        set(gcf, 'Position', [5   102   499   171]);
     end
 
     %%%%%%%%%%%%%%%%%%%%%%%%  Accuracy/Complexity plot
     if drawAccuracyComplexity
         accuracyComplexityPlot(ReportTable);
-        set(gcf,'Position',[8   361   499   275]);
+        set(gcf, 'Position', [8   361   499   275]);
     end
     
     %%%%%%%%%%%%%%%%%%%%%%%% Show principal component view on principal
@@ -233,9 +235,9 @@ setallpaths;
     
     if drawPCAView
         PCAView( NodePositions, Edges, data,...
-            vglobal(:,indPC(1)), vglobal(:,indPC(2)),... 
-            explainedVariances(indPC(1))/sum(explainedVariances),...
-            explainedVariances(indPC(2))/sum(explainedVariances));
-        set(gcf,'Position',[511   156   510   413]);
+            vglobal(:, indPC(1)), vglobal(:, indPC(2)),... 
+            explainedVariances(indPC(1)) / sum(explainedVariances),...
+            explainedVariances(indPC(2)) / sum(explainedVariances));
+        set(gcf, 'Position', [511   156   510   413]);
     end
 end

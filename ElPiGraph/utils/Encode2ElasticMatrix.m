@@ -1,4 +1,4 @@
-function [ElasticMatrix] = Encode2ElasticMatrix(Edges, Lambdas, Mus)
+function ElasticMatrix = Encode2ElasticMatrix(Edges, Lambdas, Mus)
 % Converts array of edges and vectors of elasticities for edges and stars
 % into ElasticMatrix 
 %
