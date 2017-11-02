@@ -260,27 +260,3 @@ function [NodePositionArray, ElasticMatrices, NodeIndicesArray] = ShrinkEdge(Nod
         NodeIndicesArray(:, i) = newinds;
     end
 end
-
-
-
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% % some elementary graph transformations
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% function [NodePositions2, ElasticMatrix2, NodeIndices] = f_remove_node(NodePositions,ElasticMatrix,NodeNumber)
-% % remove from the graph node number NodeNumber
-%     newinds = [1:NodeNumber-1,NodeNumber+1:size(NodePositions,1)];
-%     NodePositions2 = NodePositions(newinds,:);
-%     ElasticMatrix2 = ElasticMatrix(newinds,newinds);
-%     NodeIndices = newinds;
-% end
-% 
-% function [ElasticMatrix2] = f_reattach_edges(ElasticMatrix,NodeNumber1,NodeNumber2)
-% % reattaches all edges connected with NodeNumber2 to NodeNumber1
-% % and make a new star with an elasticity average of two merged stars
-% ElasticMatrix2(:,:) = ElasticMatrix;
-% mus = diag(ElasticMatrix);
-% lm = ElasticMatrix-diag(mus);
-% ElasticMatrix2(NodeNumber1,:) = max(lm(NodeNumber1,:),lm(NodeNumber2,:));
-% ElasticMatrix2(:,NodeNumber1) = max(lm(:,NodeNumber1),lm(:,NodeNumber2));
-% ElasticMatrix2(NodeNumber1,NodeNumber1) = (ElasticMatrix(NodeNumber1,NodeNumber1)+ElasticMatrix(NodeNumber2,NodeNumber2))/2;
-% end

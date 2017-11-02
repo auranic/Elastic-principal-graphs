@@ -15,8 +15,11 @@ function [partition, dists] = ...
 %   SquaredX is n-by-1 vector of data vectors length: SquaredX = sum(X.^2,2); 
 %   TrimmingRadius (optional) is squared trimming radius.
 %
+% Outputs
 %   partition is n-by-1 vector. partition(i) is number of node which is
 %       associated with data point X(i,:).
+%   dists is n-by-1 vector. dists(i) is squared distance between node with
+%       number partition(i) and data point X(i,:). 
 %
     if nargin<5
         TrimmingRadius = Inf;

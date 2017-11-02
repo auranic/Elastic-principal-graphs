@@ -126,7 +126,8 @@ function [EmbeddedNodePositions, ElasticEnergy, partition, dists,...
             end
             
             if verbose
-                [partition, dists] = PartitionData(X, NodePositions, MaxBlockSize, SquaredX, TrimmingRadius);
+                [partition, dists] = PartitionData(X, NodePositions,...
+                    MaxBlockSize, SquaredX, TrimmingRadius);
                 [ElasticEnergy, MSE, EP, RP] =...
                     ComputePrimitiveGraphElasticEnergy(NodePositions,...
                     ElasticMatrix, dists, 0);
@@ -149,15 +150,17 @@ function [EmbeddedNodePositions, ElasticEnergy, partition, dists,...
                 FitGraph2DataGivenPartition(X, PointWeights,...
                 SpringLaplacianMatrix, partition);
             
-            diff = ComputeRelativeChangeOfNodePositions(NodePositions,NewNodePositions);
+            diff = ComputeRelativeChangeOfNodePositions(NodePositions,...
+                NewNodePositions);
             
             if verbose
-                display(sprintf(['Iteration %i, diff=%3.3f, E=%4.4f,',...
+                display(sprintf(['Iteration %i, difference of node',...
+                    ' position=%3.3f, Energy=%4.4f,',...
                     ' MSE=%4.4f, EP=%4.4f, RP=%4.4f,'],...
                     i, diff, ElasticEnergy, MSE, EP, RP));
             end
             
-            if(diff<eps) 
+            if diff < eps
                 break; 
             end;
             
@@ -214,7 +217,9 @@ function [EmbeddedNodePositions, ElasticEnergy, partition, dists,...
                 TimeForFitting(end + 1) = toc; %#ok<AGROW>
             end
             
-            diff = ComputeRelativeChangeOfNodePositions(NodePositions(NodeSubSet,:), NewNodePositions(NodeSubSet,:));
+            diff = ComputeRelativeChangeOfNodePositions(...
+                NodePositions,...
+                NewNodePositions);
             
             if verbose
                 display(sprintf(['Iteration %i, diff=%3.3f, E=%4.4f,',...
@@ -222,7 +227,7 @@ function [EmbeddedNodePositions, ElasticEnergy, partition, dists,...
                     i, diff, ElasticEnergy, MSE, EP, RP));
             end
             
-            if(diff<eps) 
+            if diff < eps
                 break; 
             end;
             
@@ -237,21 +242,26 @@ function [EmbeddedNodePositions, ElasticEnergy, partition, dists,...
         end
     end
      
-    [partition, dists] = PartitionData(X, NodePositions, MaxBlockSize, SquaredX, TrimmingRadius);
+    [partition, dists] = PartitionData(X, NodePositions, MaxBlockSize,...
+        SquaredX, TrimmingRadius);
     [ElasticEnergy, MSE, EP, RP] =...
-        ComputePrimitiveGraphElasticEnergy(NodePositions, ElasticMatrix, dists, 0);
+        ComputePrimitiveGraphElasticEnergy(NodePositions,...
+        ElasticMatrix, dists, 0);
     if verbose
-        display(sprintf('E=%4.4f, MSE=%4.4f, EP=%4.4f, RP=%4.4f,', ElasticEnergy, MSE, EP, RP));
+        display(sprintf('E=%4.4f, MSE=%4.4f, EP=%4.4f, RP=%4.4f,',...
+            ElasticEnergy, MSE, EP, RP));
     end
     EmbeddedNodePositions = NodePositions;
 end
 
-function [SpringLaplacianMatrix] = ComputeSpringLaplacianMatrix(ElasticMatrix)
+function [SpringLaplacianMatrix] =...
+    ComputeSpringLaplacianMatrix(ElasticMatrix)
 %%%%%%%%%%%%%%%%%%%%%%%
-%% Transforms the ElasticMatrix into the SpringLaplacianMatrix ready to be used in the SLAU solving
+%% Transforms the ElasticMatrix into the SpringLaplacianMatrix ready 
+%% to be used in the SLAU solving 
 %%%%%%%%%%%%%%%%%%%%%%%
 
-    NumberOfNodes = size(ElasticMatrix,1);
+    NumberOfNodes = size(ElasticMatrix, 1);
 
     % first, make the vector of mu coefficients
     Mu = diag(ElasticMatrix);
@@ -259,18 +269,18 @@ function [SpringLaplacianMatrix] = ComputeSpringLaplacianMatrix(ElasticMatrix)
     Lambda = ElasticMatrix - diag(Mu);
     % Diagonal matrix of edge elasticities
     LambdaSums = sum(Lambda);
-    DL = diag(LambdaSums);
     % E matrix (contribution from edges) is simply weighted Laplacian
-    E = DL-Lambda;
+    E = diag(LambdaSums) - Lambda;
 
-    % S matrix (contribution from stars) is composed of Laplacian for positive strings (star edges) with
-    % elasticities mu/k, where k is the order of the star, and Laplacian for
-    % negative strings with elasticities -mu/k^2. Negative springs connect all
-    % star leafs in a clique.
+    % matrix S (contribution from stars) is composed of Laplacian for
+    % positive strings (star edges) with elasticities mu/k, where k is the
+    % order of the star, and Laplacian for negative strings with
+    % elasticities -mu/k^2. Negative springs connect all star leafs in a
+    % clique. 
 
     StarCenterIndices = find(Mu>0);
     
-    S = zeros(NumberOfNodes,NumberOfNodes);
+    S = zeros(NumberOfNodes, NumberOfNodes);
     
     for i=1:size(StarCenterIndices,1)
         Spart = zeros(NumberOfNodes,NumberOfNodes);
@@ -279,13 +289,14 @@ function [SpringLaplacianMatrix] = ComputeSpringLaplacianMatrix(ElasticMatrix)
         % order of the star
         K = sum(leafs);
         
-        Spart(StarCenterIndices(i),StarCenterIndices(i)) = Mu(StarCenterIndices(i));
-        Spart(StarCenterIndices(i),leafs) = -Mu(StarCenterIndices(i))/K;
-        Spart(leafs,StarCenterIndices(i)) = -Mu(StarCenterIndices(i))/K;
+        Spart(StarCenterIndices(i),StarCenterIndices(i)) =...
+            Mu(StarCenterIndices(i));
+        Spart(StarCenterIndices(i),leafs) = -Mu(StarCenterIndices(i)) / K;
+        Spart(leafs,StarCenterIndices(i)) = -Mu(StarCenterIndices(i)) / K;
         Spart(leafs,leafs) = Mu(StarCenterIndices(i))/K^2;
         S = S + Spart;
     end
-    SpringLaplacianMatrix = E+S;
+    SpringLaplacianMatrix = E + S;
 end
 
 function [NodeClusterCenters, NodeClusterRelativeSize] =...
@@ -321,7 +332,6 @@ function [NodeClusterCenters, NodeClusterRelativeSize] =...
         NodeClusterCenters(:, k) = accumarray(part,X(:, k), [NumberOfNodes+1, 1]) ./ tmp;
     end
     NodeClusterCenters = NodeClusterCenters(2:end,:);
-     
 end
 
 function NewNodePositions =...
@@ -334,12 +344,10 @@ function NewNodePositions =...
     NumberOfNodes = size(SpringLaplacianMatrix, 1);
     [NodeClusterCenters, NodeClusterRelativeSize] =...
         ComputeWeightedAverage(X, partition, PointWeights, NumberOfNodes);
-    SLAUMatrix = diag(NodeClusterRelativeSize)+SpringLaplacianMatrix;
+    SLAUMatrix = diag(NodeClusterRelativeSize) + SpringLaplacianMatrix;
     NewNodePositions = SLAUMatrix...
         \bsxfun(@times, NodeClusterRelativeSize, NodeClusterCenters);
 end
-
-
 
 function [NewNodePositions] =...
     FitGraph2DataGivenPartitionLocal(XLocal, PointWeightsLocal,...
@@ -347,14 +355,15 @@ function [NewNodePositions] =...
 %%%%%%%%%%%%%%%%%%%%%%%
 %% Solves the SLAU to find new node positions, local version
 %%%%%%%%%%%%%%%%%%%%%%%
-
-    NumberOfNodes = size(SpringLaplacianMatrix,1);
-    SizeSubSet = max(size(NodeSubSet,1),size(NodeSubSet,2));
+    % Define sizes
+    NumberOfNodes = size(SpringLaplacianMatrix, 1);
+    SizeSubSet = length(NodeSubSet);
     [NodeClusterCentersLocal, NodeClusterRelativeSizeLocal] =...
-        ComputeWeightedAverage(XLocal, partitionLocal, PointWeightsLocal, SizeSubSet);
+        ComputeWeightedAverage(XLocal, partitionLocal,...
+        PointWeightsLocal, SizeSubSet);
 
-    rs = zeros(size(SpringLaplacianMatrix,1),1);
-    rs(NodeSubSet,:) = NodeClusterRelativeSizeLocal(:,:);
+    rs = zeros(NumberOfNodes, 1);
+    rs(NodeSubSet, :) = NodeClusterRelativeSizeLocal(:,:);
     SLAUMatrix = diag(rs)+SpringLaplacianMatrix;
     
     SLAUMatrixLocal = SLAUMatrix(NodeSubSet,NodeSubSet);
@@ -364,26 +373,22 @@ function [NewNodePositions] =...
     
     ComplementSLAUMatrix = SLAUMatrix(NodeSubSet,ComplementNodeSet);
     
-    RightHandSide = bsxfun(@times, NodeClusterRelativeSizeLocal, NodeClusterCentersLocal);
+    RightHandSide = bsxfun(@times, NodeClusterRelativeSizeLocal,...
+        NodeClusterCentersLocal);
     
-    rhs1 = NodePositions(ComplementNodeSet,:);
+    rhs1 = NodePositions(ComplementNodeSet, :);
     
-    RightHandSide = RightHandSide - ComplementSLAUMatrix*rhs1;
+    RightHandSide = RightHandSide - ComplementSLAUMatrix * rhs1;
     
-    NewNodePositionsLocal = SLAUMatrixLocal\RightHandSide;
+    NewNodePositionsLocal = SLAUMatrixLocal \ RightHandSide;
     
-    NewNodePositions(ComplementNodeSet,:) = NodePositions(ComplementNodeSet,:);
-    NewNodePositions(NodeSubSet,:) = NewNodePositionsLocal(:,:);
+    NewNodePositions(ComplementNodeSet, :) =...
+        NodePositions(ComplementNodeSet, :);
+    NewNodePositions(NodeSubSet, :) = NewNodePositionsLocal;
 end
 
-function [diff] = ComputeRelativeChangeOfNodePositions(NodePositions,NewNodePositions)
-%%%%%%%%%%%%%%%%%%%%%%%
-%% Estimates the relative difference between two node configurations
-%%%%%%%%%%%%%%%%%%%%%%%
-
-    %diff = norm(NodePositions-NewNodePositions)/norm(NewNodePositions);
-    %diff = immse(NodePositions,NewNodePositions)/norm(NewNodePositions);
-    diff = sum((NodePositions-NewNodePositions).^2,2)./sum(NewNodePositions.^2,2);
-    diff = max(diff);
-    %diff = mean(diff);
+function diff =...
+    ComputeRelativeChangeOfNodePositions(NodePositions, NewNodePositions)
+    diff = max(sum((NodePositions - NewNodePositions) .^ 2, 2)...
+        ./ sum(NewNodePositions .^ 2, 2));
 end

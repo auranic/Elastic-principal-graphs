@@ -58,9 +58,7 @@ function [np, em, ReportTable]...
             edges = [(1:CurrentNumberOfNodes-1)', (2:CurrentNumberOfNodes)];
         end
         % Create initial ElasticMatrices for specified structure of graph
-        em = Encode2ElasticMatrix(edges,...
-            Lambda*ones(CurrentNumberOfNodes-1, 1),...
-            Mu*ones(CurrentNumberOfNodes, 1));
+        em = MakeUniformElasticMatrix(edges, Lambda, Mu);
     end
 
     if size(np, 1) == 0
