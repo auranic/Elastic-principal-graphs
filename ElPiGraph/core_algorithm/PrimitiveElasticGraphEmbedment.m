@@ -329,7 +329,8 @@ function [NodeClusterCenters, NodeClusterRelativeSize] =...
     tmp(tmp == 0) = 1;
     NodeClusterCenters = zeros(NumberOfNodes + 1,size(X, 2));
     for k=1:M
-        NodeClusterCenters(:, k) = accumarray(part,X(:, k), [NumberOfNodes+1, 1]) ./ tmp;
+        NodeClusterCenters(:, k) =...
+            accumarray(part, X(:, k), [NumberOfNodes+1, 1]) ./ tmp;
     end
     NodeClusterCenters = NodeClusterCenters(2:end,:);
 end

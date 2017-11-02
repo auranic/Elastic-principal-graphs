@@ -71,7 +71,8 @@ function [NodePositionArray, ElasticMatrices, NodeIndicesArray]...
     L = ElasticMatrix - diag(Mus);
     indL = L > 0;
     Connectivities = sum(indL);
-    assoc = accumarray(partition, 1);
+    assoc = accumarray(partition + 1, 1, [NNp1, 1]);
+    assoc = assoc(2:end);
 
     % Create prototypes for new NodePositions, ElasticMatrix and inds
     NPProt = zeros(NNp1, size(NodePositions, 2));
