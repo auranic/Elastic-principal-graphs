@@ -1,4 +1,4 @@
-function PCAView( Nodes, Edges, data, pc1, pc2, pc1FVE, pc2FVE )
+function PCAView( Nodes, Edges, data, pc1, pc2, pc1FVE, pc2FVE, varargin)
 %PCAView draw the dots from data and graph in the space of the two selected
 %principal components. Data will be centralized before projection. Mean
 %vector of data will be subtracted from nodes positions.
@@ -25,6 +25,14 @@ function PCAView( Nodes, Edges, data, pc1, pc2, pc1FVE, pc2FVE )
 %       If pc2 is number of component then this value is calculated.
 
     % Check input arguments
+    
+    TrimmingRadius = Inf;
+    for i=1:2:length(varargin)
+        if strcmpi(varargin{i},'TrimmingRadius')
+            TrimmingRadius = varargin{i+1};
+            TrimmingRadius = TrimmingRadius .^ 2;
+        end
+    end
     
     
     if nargin < 3
@@ -78,7 +86,7 @@ function PCAView( Nodes, Edges, data, pc1, pc2, pc1FVE, pc2FVE )
     % Get size of nodes
     SquaredX = sum(data.^2, 2);
     MaxBlockSize = 10000;
-    [partition] = PartitionData(data,Nodes,MaxBlockSize,SquaredX);
+    [partition] = PartitionData(data,Nodes,MaxBlockSize,SquaredX,TrimmingRadius);
     NodeSizes = ones(size(Nodes,1),1);
      for i=1:size(Nodes,1)
          NodeSizes(i) = sum(partition==i)+1;
@@ -102,7 +110,11 @@ function PCAView( Nodes, Edges, data, pc1, pc2, pc1FVE, pc2FVE )
         labels(i) = {int2str(i)};
     end
     [LabelColorMap] = createLabelColorMapList(labels);
-    
+
+    inds = find(partition==0);
+    if length(inds)>0
+        plot(xData(inds),yData(inds),'ko','MarkerSize',2,'MarkerFaceColor',[0.7 0.7 0.7],'MarkerEdgeColor',[0.7 0.7 0.7]); hold on;
+    end
     for i=1:max(node_partition)
         inds1 = find(node_partition==i);
         inds = [];
@@ -112,7 +124,6 @@ function PCAView( Nodes, Edges, data, pc1, pc2, pc1FVE, pc2FVE )
         color = LabelColorMap(char(int2str(i)));
         plot(xData(inds),yData(inds),'ko','MarkerSize',2,'MarkerFaceColor',color,'MarkerEdgeColor',color);
     end
-    
     
     % Draw tree with specified sizes of nodes
     drawGraph2D([xNodes,yNodes],Edges,'NodeSizes',NodeSizes);

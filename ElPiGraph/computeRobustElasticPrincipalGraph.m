@@ -13,11 +13,19 @@ if NumberOfSamples>1000
     NumberOfSamples=1000;
 end
 
+sampling = randperm(size(X,1),NumberOfSamples);
 
+[dense_point_index, neighbours] = find_highest_local_density_point(X, sampling);
 
-%[NodePositions,Edges,ReportTable] = computeElasticPrincipalGraph(X,NumNodes,...
-%    'TrimmingRadius',TrimmingRadius,...
-%    'InitGraph',struct('InitNodes',np,'InitEdges',ed),varargin{:});
+np(1,:) = X(dense_point_index,:);
+np(2,:) = X(neighbours(1),:);
+
+NodePositions = np;
+Edges = ed;
+
+    [NodePositions,Edges,ReportTable] = computeElasticPrincipalGraph(X,NumNodes,...
+    'TrimmingRadius',TrimmingRadius,...
+    'InitGraph',struct('InitNodes',np,'InitEdges',ed),varargin{:});
 
 end
 
