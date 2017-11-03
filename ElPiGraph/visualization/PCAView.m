@@ -25,8 +25,6 @@ function PCAView( Nodes, Edges, data, pc1, pc2, pc1FVE, pc2FVE )
 %       If pc2 is number of component then this value is calculated.
 
     % Check input arguments
-    
-    
     if nargin < 3
         error('At least Nodes, Edges, data must be specified');
     end
@@ -35,22 +33,22 @@ function PCAView( Nodes, Edges, data, pc1, pc2, pc1FVE, pc2FVE )
     data = bsxfun(@minus, data, means);
     Nodes = bsxfun(@minus, Nodes, means);
     % Check pc1 and pc2
-    if nargin < 4
+    if nargin < 5
         pc1 = 1;
         pc2 = 2;
         pc1FVE = 0;
         pc2FVE = 0;
-    elseif nargin < 5
+    elseif nargin < 6
         if length(pc1) == 1
             pc2 = pc1 + 1;
             pc2FVE = 0;
         else
             pc2 = 1;
         end
-    elseif nargin < 6
+    elseif nargin < 7
         pc1FVE = 0;
         pc2FVE = 0;
-    elseif nargin < 7
+    elseif nargin < 8
         pc2FVE = 0;
     end
     
@@ -70,7 +68,7 @@ function PCAView( Nodes, Edges, data, pc1, pc2, pc1FVE, pc2FVE )
     if length(pc2) == 1
         yData = uglobal(:,pc2);
         yNodes = Nodes*vglobal(:,pc2);
-        pc1FVE = explainedVariances(pc2)/sum(explainedVariances);
+        pc2FVE = explainedVariances(pc2)/sum(explainedVariances);
     else
         yData = data*pc2(:);
         yNodes = Nodes*pc2(:);
@@ -78,56 +76,47 @@ function PCAView( Nodes, Edges, data, pc1, pc2, pc1FVE, pc2FVE )
     % Get size of nodes
     SquaredX = sum(data.^2, 2);
     MaxBlockSize = 10000;
-    [partition] = PartitionData(data,Nodes,MaxBlockSize,SquaredX);
-    NodeSizes = ones(size(Nodes,1),1);
-     for i=1:size(Nodes,1)
-         NodeSizes(i) = sum(partition==i)+1;
-     end
+    partition = PartitionData(data, Nodes, MaxBlockSize, SquaredX);
+    
+    % Calculate weights for Relative size
+    NodeSizes = accumarray(partition, 1, [size(Nodes, 1), 1]) + 1;
     
     % Create figure
     figure;
     
     % Draw data
-    %plot(xData,yData,'ko','MarkerSize',2);
     % Draw data clustered by branches
-    em = MakeUniformElasticMatrix(Edges,1,1);
-    [node_partition, internal_flag, star_centers] = partition_nodes_by_branch(em);
-    inds1 = find(node_partition==0);
-    inds = [];
-    for i=1:size(inds1,1)
-        inds = [inds;find(partition==inds1(i))];
-    end
+    em = MakeUniformElasticMatrix(Edges, 1, 1);
+    node_partition = partition_nodes_by_branch(em);
+    % Draw points for stars
+    inds = ismember(partition, find(node_partition == 0));
     plot(xData(inds),yData(inds),'ko','MarkerSize',2); hold on;
-    for i=1:max(node_partition)
-        labels(i) = {int2str(i)};
-    end
-    [LabelColorMap] = createLabelColorMapList(labels);
+    % Number of branches
+    B = max(node_partition);
+    % Form colour map
+    [LabelColorMap] = createLabelColorMapList(cellstr(int2str((1:B)'))');
     
-    for i=1:max(node_partition)
-        inds1 = find(node_partition==i);
-        inds = [];
-        for j=1:size(inds1,1)
-            inds = [inds;find(partition==inds1(j))];
-        end
+    for i=1:B
+        %Select data points associated with branch i
+        inds = ismember(partition, find(node_partition == i));
         color = LabelColorMap(char(int2str(i)));
-        plot(xData(inds),yData(inds),'ko','MarkerSize',2,'MarkerFaceColor',color,'MarkerEdgeColor',color);
+        plot(xData(inds), yData(inds), 'ko', 'MarkerSize', 2,...
+            'MarkerFaceColor', color, 'MarkerEdgeColor', color);
     end
-    
     
     % Draw tree with specified sizes of nodes
-    drawGraph2D([xNodes,yNodes],Edges,'NodeSizes',NodeSizes);
+    drawGraph2D([xNodes, yNodes], Edges, 'NodeSizes', NodeSizes);
     
-    
-    title('PCA view of principal graph','FontSize',20);
+    title('PCA view of principal graph', 'FontSize', 20);
     if pc1FVE>0
-        xlabel(sprintf('PCx(%2.2f%%)',pc1FVE*100),'FontSize',20);
+        xlabel(sprintf('PCx(%2.2f%%)', pc1FVE * 100), 'FontSize', 20);
     else
-        xlabel('PCx','FontSize',20);
+        xlabel('PCx', 'FontSize', 20);
     end
     if pc2FVE>0
-        ylabel(sprintf('PCy(%2.2f%%)',pc2FVE*100),'FontSize',20);
+        ylabel(sprintf('PCy(%2.2f%%)', pc2FVE*100), 'FontSize', 20);
     else
-        ylabel('PCy','FontSize',20);
+        ylabel('PCy', 'FontSize', 20);
     end
 end
 

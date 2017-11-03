@@ -1,9 +1,9 @@
 function [node_partition, internal_flag, star_centers] = partition_nodes_by_branch(ElasticMatrix)
 %% Decompose the graph into branches (stretches of edges connecting star centers)
-%   Input: representation of the primitive elastic graph as an
+% Input: representation of the primitive elastic graph as an
 %   ElasticMatrix. The matrix will be transformed into an adjacency matrix,
 %   so it can be simple an adjacency matrix as well
-%   Output:
+% Output:
 %   node_partition - vector of size(ElasticMatrix,1) length with a
 %      numbers indicating distinct branches. Star centers do not belong
 %      to branches (they are documented separately in star_centers output)
@@ -17,60 +17,76 @@ function [node_partition, internal_flag, star_centers] = partition_nodes_by_bran
 %      be further made data-dependent, using 'order_branches_in_stars'
 %      function, to be used further in graph layout algorithms
 %%
+    % Convert ElasticMatrix into adjacency matrix and create copy
+    A = (ElasticMatrix-diag(diag(ElasticMatrix)))>0;
+    B = A;
+    % Define size, preallocate arrays and calculate connectivities
+    N = size(A,1);
+    node_partition = zeros(N, 1);
+    internal_flag = node_partition;
+    Connectivities = sum(A);
 
-A = (ElasticMatrix-diag(diag(ElasticMatrix)))>0;
-node_partition = zeros(size(A,1),1);
-Connectivities = sum(A);
-
-count = 1;
-internal_flag = zeros(size(A,1),1);
-
-while 1    
-    inds = find((Connectivities==2)|(Connectivities==1));
-    inds1 = [];
-    l = 1;
-    for j=1:size(inds,2)
-        if node_partition(inds(j))==0 inds1(l)=inds(j); l=l+1; end;
+    % Select terminal nodes and nodes with two lwaves
+    term = Connectivities < 3;
+    termInd = find(term);
+    count = 1;
+    while true
+        % Search the first such node which is not coloured yet
+        inds1 = termInd(node_partition(term) == 0);
+        % If all such nodes are coloured then stop.
+        if isempty(inds1) 
+            break; 
+        end;
+        % seeding the branch
+        ind = false(1, N);
+        ind(inds1(1)) = true;
+        node_partition(ind) = count;
+        % extending the branch to the 'left'
+        while true
+            % Select all nodes, connected with previously selected
+            inds = sum(A(ind, :), 1)>0;
+            % Clear this node connection in A
+            A(:, ind)=0;
+            A(ind, :)=0;
+            % Put current branch code to selected nodes
+            node_partition(inds) = count;
+            % Remove all exclude term
+            ind = inds & term;
+            if sum(ind) == 0
+                break;
+            end
+        end
+        % Check the type of branch. If there are two stars then it is
+        % internal branch
+        if nargout > 1
+            if sum(Connectivities(node_partition == count) > 2) == 2
+                internal_flag(inds) = 1;
+            end
+        end
+        count = count+1;
     end
-    if size(inds1,1)==0 break; end;
-    % seeding the branch
-    k = inds1(1);
-    node_partition(k)=count;
-    % extending the branch to the 'left'
-    [A,node_partition] = extend_branch(A,node_partition,Connectivities,k,count);
+
+    % Remove branch marks from stars
+    node_partition(~term)=0;
+    internal_flag(~term)=0;
+
+    if nargout < 3
+        return;
+    end
     
-    number_of_branches = max(node_partition);
-    for i=1:number_of_branches
-        inds = find(node_partition==i);
-        number_of_stars_in_branch = sum(Connectivities(inds)>2);
-        if number_of_stars_in_branch==2
-            internal_flag(inds) = 1;
-        end
+    % Find all stars with more than 2 leaves.
+    stars = find(~term);
+    if isempty(stars)
+        star_centers = struct([]);
+        return
     end
-    count = count+1;
-end
-stars = find(Connectivities>2);
-node_partition(stars)=0;
-internal_flag(stars)=0;
-
-if(size(stars,2)==0)
-    star_centers = struct([]);
-end
-
-A = (ElasticMatrix-diag(diag(ElasticMatrix)))>0;
-for i=1:size(stars,2)
-    inds = find(A(stars(i),:)>0);
-    branches = [];
-    k=1;
-    for j=1:size(inds,2) 
-        if node_partition(inds(j))>0
-            branches(k)=node_partition(inds(j)); k=k+1;
-        end
+    
+    for i=length(stars):-1:1
+        inds = B(stars(i), :) & term;
+        branches = node_partition(inds);
+        sc = struct('center', stars(i), 'branches', branches);
+        star_centers(i)=sc;
     end
-    sc = struct('center',stars(i),'branches',branches);
-    star_centers(i)=sc;
-end
-
 end
 
 function [A,node_partition] = extend_branch(A,node_partition,connectivities,k,branch_id)
