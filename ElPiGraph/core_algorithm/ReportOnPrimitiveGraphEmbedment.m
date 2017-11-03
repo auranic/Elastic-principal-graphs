@@ -74,7 +74,9 @@ function [BARCODE, ENERGY, NNODES, NEDGES, NRIBS, NSTARS, NRAYS, NRAYS2,...
     NRAYS = 0;
     NRAYS2 = 0;
     if computeMSEP
-        MSEP = project_point_onto_graph(X,  NodePositions,  Edges, partition);
+        MSEP =...
+            project_point_onto_graph(X,  NodePositions,  Edges, partition);
+        MSEP = sum(MSEP(:) .^ 2) / size(MSEP,1);
         FVEP = (TotalVariance-MSEP)/TotalVariance;
     else
         MSEP = NaN;
