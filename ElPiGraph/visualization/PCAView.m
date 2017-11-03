@@ -90,7 +90,13 @@ function PCAView( Nodes, Edges, data, pc1, pc2, pc1FVE, pc2FVE, varargin)
     [partition] = PartitionData(data,Nodes,MaxBlockSize,SquaredX,TrimmingRadius);
     
     % Calculate weights for Relative size
-    NodeSizes = accumarray(partition, 1, [size(Nodes, 1), 1]) + 1;
+    %NodeSizes = accumarray(partition, 1, [size(Nodes, 1), 1]) + 1;
+    if length(find(partition==0))>0
+	    ns = histc(partition,[min(partition):max(partition)]);
+	    NodeSizes = ns(2:end);
+    else
+	    NodeSizes = histc(partition,[min(partition):max(partition)]);
+    end
     
     % Create figure
     figure;
