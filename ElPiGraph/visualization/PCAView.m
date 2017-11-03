@@ -25,6 +25,8 @@ function PCAView( Nodes, Edges, data, pc1, pc2, pc1FVE, pc2FVE )
 %       If pc2 is number of component then this value is calculated.
 
     % Check input arguments
+    
+    
     if nargin < 3
         error('At least Nodes, Edges, data must be specified');
     end
@@ -33,22 +35,22 @@ function PCAView( Nodes, Edges, data, pc1, pc2, pc1FVE, pc2FVE )
     data = bsxfun(@minus, data, means);
     Nodes = bsxfun(@minus, Nodes, means);
     % Check pc1 and pc2
-    if nargin < 5
+    if nargin < 4
         pc1 = 1;
         pc2 = 2;
         pc1FVE = 0;
         pc2FVE = 0;
-    elseif nargin < 6
+    elseif nargin < 5
         if length(pc1) == 1
             pc2 = pc1 + 1;
             pc2FVE = 0;
         else
             pc2 = 1;
         end
-    elseif nargin < 7
+    elseif nargin < 6
         pc1FVE = 0;
         pc2FVE = 0;
-    elseif nargin < 8
+    elseif nargin < 7
         pc2FVE = 0;
     end
     
