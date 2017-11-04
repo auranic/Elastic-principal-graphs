@@ -1,5 +1,5 @@
 function [LabelColorMap, graph, TaxonMap] =...
-    drawPieChartsMetroMap(NodePositions, Edges, data, labels, varargin)
+    drawPieChartsMetroMap(NodePositions, Edges, data, labels, nodesMM, varargin)
 %drawPieChartsMetroMap draw metro map with pie cart in each node
 %
 %   IMPORTANT This procedure does not create figure!
@@ -25,10 +25,10 @@ function [LabelColorMap, graph, TaxonMap] =...
             ' elements as number of observations (rows) in data']);
     end
     % Calculate positions of nodes in metro map
-    nodesMM = computeMetroMapLayout(NodePositions,Edges);
+    %nodesMM = computeMetroMapLayout(NodePositions,Edges);
     % Calculate graph
-    Edges1 = Edges - 1;
-    graph = makeGraph(NodePositions,Edges1);
+    %Edges1 = Edges - 1;
+    %graph = makeGraph(NodePositions,Edges1);
     % Form taxon map
     %TaxonMap = getTaxonMap(graph,data);
     partition = PartitionData(data,NodePositions,100000,sum(data.^2,2));

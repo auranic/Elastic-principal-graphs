@@ -60,8 +60,8 @@ function [LabelColorMap] =...
     %Draw pie charts
     for i=1:size(NodePositions,1)
         %Get taxon
-        taxon = find(partition==ind(i));
-        if ind(i)==1
+        taxon = find(partition==i);
+        if i==6
             display(taxon);
         end
         %Labels(taxon)
@@ -88,8 +88,11 @@ function [LabelColorMap] =...
             colors(j,:) = LabelColorMap(label);
         end
         %Draw chart
-        drawPieChart(NodePositions(ind(i),1), NodePositions(ind(i),2),...
-            ns(i),props,colors); 
+        %drawPieChart(NodePositions(ind(i),1), NodePositions(ind(i),2),...
+        %    ns(i),props,colors); 
+        x = NodePositions(ind(i),1);
+        y = NodePositions(ind(i),2);
+        text(double(x,y,sprintf('%i',i)); hold on;
     end
     axis equal; axis auto;
 end
