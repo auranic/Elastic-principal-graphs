@@ -43,22 +43,22 @@ function PCAView( Nodes, Edges, data, pc1, pc2, pc1FVE, pc2FVE, varargin)
     data = bsxfun(@minus, data, means);
     Nodes = bsxfun(@minus, Nodes, means);
     % Check pc1 and pc2
-    if nargin < 5
+    if nargin < 4
         pc1 = 1;
         pc2 = 2;
         pc1FVE = 0;
         pc2FVE = 0;
-    elseif nargin < 6
+    elseif nargin < 5
         if length(pc1) == 1
             pc2 = pc1 + 1;
             pc2FVE = 0;
         else
             pc2 = 1;
         end
-    elseif nargin < 7
+    elseif nargin < 6
         pc1FVE = 0;
         pc2FVE = 0;
-    elseif nargin < 8
+    elseif nargin < 7
         pc2FVE = 0;
     end
     
@@ -90,12 +90,12 @@ function PCAView( Nodes, Edges, data, pc1, pc2, pc1FVE, pc2FVE, varargin)
     [partition] = PartitionData(data,Nodes,MaxBlockSize,SquaredX,TrimmingRadius);
     
     % Calculate weights for Relative size
-    %NodeSizes = accumarray(partition, 1, [size(Nodes, 1), 1]) + 1;
+    %
     if length(find(partition==0))>0
 	    ns = histc(partition,[min(partition):max(partition)]);
 	    NodeSizes = ns(2:end);
     else
-	    NodeSizes = histc(partition,[min(partition):max(partition)]);
+	    NodeSizes = accumarray(partition, 1, [size(Nodes, 1), 1]) + 1;
     end
     
     % Create figure
@@ -128,7 +128,9 @@ function PCAView( Nodes, Edges, data, pc1, pc2, pc1FVE, pc2FVE, varargin)
     % Number of branches
     B = max(node_partition);
     % Form colour map
-    [LabelColorMap] = createLabelColorMapList(cellstr(int2str((1:B)'))');
+    %[LabelColorMap] = createLabelColorMapList(cellstr(int2str((1:B)'))');
+    
+    %LabelColorMap.keys
     
     for i=1:B
         %Select data points associated with branch i

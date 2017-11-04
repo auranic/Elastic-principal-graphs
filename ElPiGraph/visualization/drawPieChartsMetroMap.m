@@ -27,11 +27,14 @@ function [LabelColorMap, graph, TaxonMap] =...
     % Calculate positions of nodes in metro map
     nodesMM = computeMetroMapLayout(NodePositions,Edges);
     % Calculate graph
-    graph = makeGraph(NodePositions,Edges);
+    Edges1 = Edges - 1;
+    graph = makeGraph(NodePositions,Edges1);
     % Form taxon map
-    TaxonMap = getTaxonMap(graph,data);
+    %TaxonMap = getTaxonMap(graph,data);
+    partition = PartitionData(data,NodePositions,100000,sum(data.^2,2));
+    
     % Draw diagram
     hold on;
     [LabelColorMap] =...
-        drawPieChartsProc(nodesMM, TaxonMap, labels, varargin{:});
+        drawPieChartsProc(nodesMM, partition, labels, varargin{:});
 end

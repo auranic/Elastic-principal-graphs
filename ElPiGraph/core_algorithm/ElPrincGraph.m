@@ -190,9 +190,25 @@ function [np, em, ReportTable]...
     if nargout > 2
         i = i - 1;
         BARCODE = char(BARCODES(1:i));
-        ReportTable = table(BARCODE, ENERGY(1:i), NNODES(1:i),...
-            NEDGES(1:i), NRIBS(1:i), NSTARS(1:i), NRAYS(1:i),...
-            NRAYS2(1:i), MSE(1:i), MSEP(1:i), FVE(1:i), FVEP(1:i),...
-            UE(1:i), UR(1:i), URN(1:i), URN2(1:i), URSD(1:i));
+        ENERGY = ENERGY(1:i);
+        NNODES = NNODES(1:i);
+        NEDGES = NEDGES(1:i); 
+        NRIBS = NRIBS(1:i); 
+        NSTARS = NSTARS(1:i); 
+        NRAYS = NRAYS(1:i); 
+        NRAYS2 = NRAYS2(1:i); 
+        MSE = MSE(1:i); 
+        MSEP = MSEP(1:i); 
+        FVE = FVE(1:i); 
+        FVEP = FVEP(1:i); 
+        UE = UE(1:i); 
+        UR = UR(1:i); 
+        URN = URN(1:i); 
+        URN2 = URN2(1:i); 
+        URSD = URSD(1:i);
+        ReportTable = table(BARCODE, ENERGY, NNODES,...
+            NEDGES, NRIBS, NSTARS, NRAYS,...
+            NRAYS2, MSE, MSEP, FVE, FVEP,...
+            UE, UR, URN, URN2, URSD);
     end
 end
