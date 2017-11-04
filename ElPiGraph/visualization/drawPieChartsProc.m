@@ -61,9 +61,6 @@ function [LabelColorMap] =...
     for i=1:size(NodePositions,1)
         %Get taxon
         taxon = find(partition==ind(i));
-        if ind(i)==1
-            display(taxon);
-        end
         %Labels(taxon)
         countsMap = containers.Map;
         % Calculate number of cases of each class
