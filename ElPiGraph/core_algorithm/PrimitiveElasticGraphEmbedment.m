@@ -98,6 +98,7 @@ function [EmbeddedNodePositions, ElasticEnergy, partition, dists,...
             if isdeployed
                 TrimmingRadius = str2double(TrimmingRadius);
             end
+            TrimmingRadius = TrimmingRadius .^ 2;
         elseif strcmpi(varargin{i},'PointWeights')
             PointWeights = varargin{i+1};
         elseif strcmpi(varargin{i},'Local')

@@ -1,13 +1,12 @@
 function [LabelColorMap] =...
-    drawPieChartsProc(NodePositions, TaxonMap, Labels, varargin)
+    drawPieChartsProc(NodePositions, partition, Labels, varargin)
 %drawPieChartsProc is procedure to draw pie chats in each nodeof graph
 %
 %   IMPORTANT This procedure does not create figure!
 %
 %Input features:
 %   NodePositions is k-by-2 array of x and y coordinates of nodes.
-%   TaxonMap is map of data points. Each element of map contains list of
-%       data points associated with this node 
+%   partition is a partitioning of data points to nodes
 %   Labels is vector of labels (one label for each observation).
 %   'Name',Value pairs can customize view:
 %       'LabelColorMap' is list of labels for color map. Default value is
@@ -29,10 +28,10 @@ function [LabelColorMap] =...
     
     % Creater label color map in accordance with user specification
     if makeColorMap
-        % Automative creation
+        % Automatic creation
         LabelColorMap = createLabelColorMapList(Labels);    
     else
-        % Use map created by user ???
+        % Use the map defined by user 
         tempMap = createLabelColorMapList(Labels);
         tempLabels = LabelColorMap.keys;
         for i=1:size(tempLabels,2)
@@ -43,14 +42,17 @@ function [LabelColorMap] =...
     end
     % Calculate scale for charts
     scale = sqrt(sum(std(NodePositions(:,1:2))));
-    % Calculate node sizes from TaxonMap
-    NodeNum = TaxonMap.Count;
-    NodeSizes = zeros(NodeNum,1);
-    NodeLabels = TaxonMap.keys;
-    for i=1:size(NodeLabels,2)
-        k = str2num(char(NodeLabels(i)));
-        NodeSizes(k) = size(TaxonMap(char(NodeLabels(i))),1);
+    % Calculate node sizes from partition
+    NodeNum = length(partition);
+    %NodeSizes = histc(partition,[min(partition):max(partition)]);
+
+    if length(find(partition==0))>0
+	    ns = histc(partition,min(partition):max(partition));
+	    NodeSizes = ns(2:end);
+    else
+	    NodeSizes = accumarray(partition, 1, [size(NodePositions, 1), 1]) + 1;
     end
+    
     % Sort sizes of nodes
     [ns,ind] = sort(NodeSizes,'descend');
     % Rescale data
@@ -58,10 +60,14 @@ function [LabelColorMap] =...
     %Draw pie charts
     for i=1:size(NodePositions,1)
         %Get taxon
-        taxon = TaxonMap(num2str(ind(i)));
+        taxon = find(partition==i);
+        if i==6
+            display(taxon);
+        end
+        %Labels(taxon)
         countsMap = containers.Map;
         % Calculate number of cases of each class
-        for j=1:size(taxon,1)
+        for j=1:length(taxon)
             label = char(Labels(taxon(j)));
             if ~strcmp(label,'_')
             if ~countsMap.isKey(label)

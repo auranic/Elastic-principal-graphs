@@ -1,4 +1,4 @@
-function PCAView( Nodes, Edges, data, pc1, pc2, pc1FVE, pc2FVE )
+function PCAView( Nodes, Edges, data, pc1, pc2, pc1FVE, pc2FVE, varargin)
 %PCAView draw the dots from data and graph in the space of the two selected
 %principal components. Data will be centralized before projection. Mean
 %vector of data will be subtracted from nodes positions.
@@ -25,6 +25,16 @@ function PCAView( Nodes, Edges, data, pc1, pc2, pc1FVE, pc2FVE )
 %       If pc2 is number of component then this value is calculated.
 
     % Check input arguments
+    
+    TrimmingRadius = Inf;
+    for i=1:2:length(varargin)
+        if strcmpi(varargin{i},'TrimmingRadius')
+            TrimmingRadius = varargin{i+1};
+            TrimmingRadius = TrimmingRadius .^ 2;
+        end
+    end
+    
+    
     if nargin < 3
         error('At least Nodes, Edges, data must be specified');
     end
@@ -33,22 +43,22 @@ function PCAView( Nodes, Edges, data, pc1, pc2, pc1FVE, pc2FVE )
     data = bsxfun(@minus, data, means);
     Nodes = bsxfun(@minus, Nodes, means);
     % Check pc1 and pc2
-    if nargin < 5
+    if nargin < 4
         pc1 = 1;
         pc2 = 2;
         pc1FVE = 0;
         pc2FVE = 0;
-    elseif nargin < 6
+    elseif nargin < 5
         if length(pc1) == 1
             pc2 = pc1 + 1;
             pc2FVE = 0;
         else
             pc2 = 1;
         end
-    elseif nargin < 7
+    elseif nargin < 6
         pc1FVE = 0;
         pc2FVE = 0;
-    elseif nargin < 8
+    elseif nargin < 7
         pc2FVE = 0;
     end
     
@@ -76,10 +86,17 @@ function PCAView( Nodes, Edges, data, pc1, pc2, pc1FVE, pc2FVE )
     % Get size of nodes
     SquaredX = sum(data.^2, 2);
     MaxBlockSize = 10000;
-    partition = PartitionData(data, Nodes, MaxBlockSize, SquaredX);
+
+    [partition] = PartitionData(data,Nodes,MaxBlockSize,SquaredX,TrimmingRadius);
     
     % Calculate weights for Relative size
-    NodeSizes = accumarray(partition, 1, [size(Nodes, 1), 1]) + 1;
+    %
+    if length(find(partition==0))>0
+	    ns = histc(partition,[min(partition):max(partition)]);
+	    NodeSizes = ns(2:end);
+    else
+	    NodeSizes = accumarray(partition, 1, [size(Nodes, 1), 1]) + 1;
+    end
     
     % Create figure
     figure;
@@ -91,10 +108,29 @@ function PCAView( Nodes, Edges, data, pc1, pc2, pc1FVE, pc2FVE )
     % Draw points for stars
     inds = ismember(partition, find(node_partition == 0));
     plot(xData(inds),yData(inds),'ko','MarkerSize',2); hold on;
+
+    for i=1:max(node_partition)
+        labels(i) = {int2str(i)};
+    end
+    [LabelColorMap] = createLabelColorMapList(labels);
+
+    inds = find(partition==0);
+    if length(inds)>0
+        plot(xData(inds),yData(inds),'ko','MarkerSize',2,'MarkerFaceColor',[0.7 0.7 0.7],'MarkerEdgeColor',[0.7 0.7 0.7]); hold on;
+    end
+    for i=1:max(node_partition)
+        inds1 = find(node_partition==i);
+        inds = [];
+        for j=1:size(inds1,1)
+            inds = [inds;find(partition==inds1(j))];
+        end
+
     % Number of branches
     B = max(node_partition);
     % Form colour map
-    [LabelColorMap] = createLabelColorMapList(cellstr(int2str((1:B)'))');
+    %[LabelColorMap] = createLabelColorMapList(cellstr(int2str((1:B)'))');
+    
+    %LabelColorMap.keys
     
     for i=1:B
         %Select data points associated with branch i
