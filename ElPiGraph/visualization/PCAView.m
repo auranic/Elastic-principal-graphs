@@ -117,7 +117,11 @@ function PCAView( Nodes, Edges, data, pc1, pc2, pc1FVE, pc2FVE, varargin)
     % Number of branches
     B = max(node_partition);
     % Form colour map
-    LabelColorMap = createLabelColorMapList(cellstr(int2str((1:B)'))');
+    labels = cell(B,1);
+    for k = 1:B
+        labels(k) = {int2str(k)};
+    end
+    LabelColorMap = createLabelColorMapList(labels);
     
     for r = 1:B
         %Select data points associated with branch i
