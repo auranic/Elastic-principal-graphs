@@ -87,16 +87,13 @@ function PCAView( Nodes, Edges, data, pc1, pc2, pc1FVE, pc2FVE, varargin)
     SquaredX = sum(data.^2, 2);
     MaxBlockSize = 10000;
 
-    [partition] = PartitionData(data,Nodes,MaxBlockSize,SquaredX,TrimmingRadius);
+    [partition] = PartitionData(data, Nodes, MaxBlockSize,...
+        SquaredX, TrimmingRadius);
     
     % Calculate weights for Relative size
     %
-    if length(find(partition==0))>0
-	    ns = histc(partition,[min(partition):max(partition)]);
-	    NodeSizes = ns(2:end);
-    else
-	    NodeSizes = accumarray(partition, 1, [size(Nodes, 1), 1]) + 1;
-    end
+    NodeSizes = accumarray(partition + 1, 1, [size(Nodes, 1) + 1, 1]);
+    NodeSizes = NodeSizes(2:end);
     
     % Create figure
     figure;
@@ -109,33 +106,23 @@ function PCAView( Nodes, Edges, data, pc1, pc2, pc1FVE, pc2FVE, varargin)
     inds = ismember(partition, find(node_partition == 0));
     plot(xData(inds),yData(inds),'ko','MarkerSize',2); hold on;
 
-    for i=1:max(node_partition)
-        labels(i) = {int2str(i)};
+    inds = partition == 0;
+    if sum(inds)>0
+        plot(xData(inds), yData(inds), 'ko', 'MarkerSize', 2,...
+            'MarkerFaceColor', [0.7 0.7 0.7],...
+            'MarkerEdgeColor', [0.7 0.7 0.7]); 
+        hold on;
     end
-    [LabelColorMap] = createLabelColorMapList(labels);
-
-    inds = find(partition==0);
-    if length(inds)>0
-        plot(xData(inds),yData(inds),'ko','MarkerSize',2,'MarkerFaceColor',[0.7 0.7 0.7],'MarkerEdgeColor',[0.7 0.7 0.7]); hold on;
-    end
-    for i=1:max(node_partition)
-        inds1 = find(node_partition==i);
-        inds = [];
-        for j=1:size(inds1,1)
-            inds = [inds;find(partition==inds1(j))];
-        end
-
+    
     % Number of branches
     B = max(node_partition);
     % Form colour map
-    %[LabelColorMap] = createLabelColorMapList(cellstr(int2str((1:B)'))');
+    LabelColorMap = createLabelColorMapList(cellstr(int2str((1:B)'))');
     
-    %LabelColorMap.keys
-    
-    for i=1:B
+    for r = 1:B
         %Select data points associated with branch i
-        inds = ismember(partition, find(node_partition == i));
-        color = LabelColorMap(char(int2str(i)));
+        inds = ismember(partition, find(node_partition == r));
+        color = LabelColorMap(char(int2str(r)));
         plot(xData(inds), yData(inds), 'ko', 'MarkerSize', 2,...
             'MarkerFaceColor', color, 'MarkerEdgeColor', color);
     end
