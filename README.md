@@ -67,6 +67,8 @@ computeElasticPrincipalCurve.m          - computes elastic principal curve with 
 
 computeElasticPrincipalGraph.m		- computes elastic principal graph for a dataset with a given number of nodes and defined set of grammars (principal tree grammar by default)
 
+computeRobustElasticPrincipalGraph.m		- computes robust version of elastic principal graph for a dataset with a given number of nodes and defined set of grammars (principal tree grammar by default)
+
 setallpaths.m				- set all paths to other folders (needed if some functions are called directly, bypassing the root folder "computeElasticPrincipalXXX.m" functions)
 
  
