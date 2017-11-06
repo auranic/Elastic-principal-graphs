@@ -30,9 +30,9 @@ For more details of elastic principal graph theory read:
 
 [Gorban A., Sumner N., Zinovyev A. Topological grammars for data approximation. 2007. Applied Mathematics Letters 20(4), 382-386.](http://arxiv.org/pdf/cs/0603090v2.pdf)
 
-[Gorban A., Mirkes E., Zinovyev A. Robust principal graphs for data approximation. Archives of Data Science 2(1):1:16, 2017.](href="http://arxiv.org/abs/1603.06828)
+[Gorban A., Mirkes E., Zinovyev A. Robust principal graphs for data approximation. Archives of Data Science 2(1):1:16, 2017.](href=http://arxiv.org/abs/1603.06828)
 
-[Gorban A.N., Zinovyev A. 2010. Principal manifolds and graphs in practice: from molecular biology to dynamical systems. Int J Neural Syst 20(3):219-32.](href="http://arxiv.org/pdf/1001.1122.pdf)
+[Gorban A.N., Zinovyev A. 2010. Principal manifolds and graphs in practice: from molecular biology to dynamical systems. Int J Neural Syst 20(3):219-32.](http://arxiv.org/pdf/1001.1122.pdf)
 
 # Organization of the code
 
