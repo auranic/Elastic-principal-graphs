@@ -17,7 +17,7 @@ The simplest graph grammar "Bisect an edge", "Add a node to a node" leads to con
 Read [wiki](https://github.com/auranic/Elastic-principal-graphs/wiki) of this repository for more detailed information on the algorithm
 and examples of its application.
 
-Go to [R implementation of elastic principal graphs interface](https://github.com/Albluca/rpgraph) created by [Luca Albergante](https://github.com/Albluca).
+Go to [R implementation of elastic principal graphs](https://github.com/Albluca/ElPiGraph.R) coded by [Luca Albergante](https://github.com/Albluca).
 
 For more details of elastic principal graph theory read:
 
