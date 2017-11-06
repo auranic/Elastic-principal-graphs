@@ -75,11 +75,20 @@ close all; drawnow;
 display('Comparing global and local optimization on a relatively large graph and dataset');
 
 data = load('test_data/tree23/tree23_inflated.data');
+
+display(sprintf('Number of data points = %i',size(data,1)));
+
 display('Global optimization:');
 tic; [NodePositions,Edges,ReportTable] = computeElasticPrincipalGraph(data,50,'Plots',2,'verbose',0); toc;
+ln = ones(1,max(max(Edges)));
+le = ones(1,size(Edges,1));
+display(sprintf('Barcode for the tree = %s',getPrimitiveGraphStructureBarCode(Encode2ElasticMatrix(Edges,le,ln))));
 display('Local optimization:');
 %figure;
 tic; [NodePositions,Edges,ReportTable] = computeElasticPrincipalGraph(data,50,'Plots',2,'LocalSearch',2,'verbose',0); toc;
+ln = ones(1,max(max(Edges)));
+le = ones(1,size(Edges,1));
+display(sprintf('Barcode for the tree = %s',getPrimitiveGraphStructureBarCode(Encode2ElasticMatrix(Edges,le,ln))));
 
 pause(2);
 close all;
@@ -90,6 +99,9 @@ data = load('test_data/tree23/tree23_inflated.data');
 tic;
 [NodePositions,Edges,ReportTable] = computeElasticPrincipalGraph(data,50,'GrowGrammars',[{'bisectedge','addnode2node'}],'ShrinkGrammars',[]);
 toc;
+ln = ones(1,max(max(Edges)));
+le = ones(1,size(Edges,1));
+display(sprintf('Barcode for the tree = %s',getPrimitiveGraphStructureBarCode(Encode2ElasticMatrix(Edges,le,ln))));
 
 pause(2);
 close all; drawnow;
@@ -247,5 +259,5 @@ hold on;
 end; 
 end;
 
-pause(3);
+pause(5);
 close all; drawnow;
