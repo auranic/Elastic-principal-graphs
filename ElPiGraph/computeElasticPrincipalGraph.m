@@ -242,4 +242,6 @@ function [NodePositions, Edges, ReportTable] =...
             varargin{:});
         set(gcf, 'Position', [511   156   510   413]);
     end
+    
+    drawnow;
 end

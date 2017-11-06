@@ -269,4 +269,5 @@ function [NodePositions, Edges, ReportTable, cpg] = ...
     ReportTable = readtable(fn,'Delimiter','\t');
     NodePositions = cpg.graph.getNodePositions();
     Edges = cpg.graph.getEdgeTable();
+    Edges = Edges+1;
 end

@@ -210,7 +210,7 @@ setallpaths;
     newDimension = -1;
     drawAccuracyComplexity = true;
     drawPCAView = true;
-    drawMetroMaps = true;
+    drawMetroMaps = false;
     drawEnergy = true;
 
     for i=1:2:length(varargin)
