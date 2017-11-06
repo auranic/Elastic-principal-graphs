@@ -14,7 +14,7 @@ Elastic principal graphs are based on minimization of the energy potential conta
 
 ### U = MSE + \lambda UE + \mu UR
 
-### [](http://latex.codecogs.com/gif.latex?U%20%3D%20MSE%20&plus;%20%5Clambda%20U_E%20&plus;%20%5Cmu%20U_R)
+### ![equation](http://latex.codecogs.com/gif.latex?U%20%3D%20MSE%20&plus;%20%5Clambda%20U_E%20&plus;%20%5Cmu%20U_R)
 
 where MSE is the mean squared error of data approximation, UR - is the sum of squared edge lengths, UR is a term minimizing the deviation of the principal graph embedment from harmonicity (generalization of linearity), \lambda ,\mu  are coefficients of regularization.
 
