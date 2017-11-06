@@ -12,11 +12,9 @@ Principal graphs are graphs that are embedded into a high-dimensional space and 
 
 Elastic principal graphs are based on minimization of the energy potential containing three parts :
 
-### U = MSE + \lambda UE + \mu UR
-
 ### ![equation](http://latex.codecogs.com/gif.latex?U%20%3D%20MSE%20&plus;%20%5Clambda%20U_E%20&plus;%20%5Cmu%20U_R)
 
-where MSE is the mean squared error of data approximation, UR - is the sum of squared edge lengths, UR is a term minimizing the deviation of the principal graph embedment from harmonicity (generalization of linearity), \lambda ,\mu  are coefficients of regularization.
+where MSE is the mean squared error of data approximation, ![equation](http://latex.codecogs.com/gif.latex?U_E) - is the sum of squared edge lengths, ![equation](http://latex.codecogs.com/gif.latex?U_R) is a term minimizing the deviation of the principal graph embedment from harmonicity (generalization of linearity), ![equation](http://latex.codecogs.com/gif.latex?%5Clambda) ,![equation](http://latex.codecogs.com/gif.latex?%5Cmu)  are coefficients of regularization.
 
 The structure of the graph is computed by an optimal application of a sequence of graph transformations, using operations from predefined graph grammar.
 The simplest graph grammar "Bisect an edge", "Add a node to a node" leads to construction of a principal tree.
