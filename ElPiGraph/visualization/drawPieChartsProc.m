@@ -16,7 +16,7 @@ function [LabelColorMap] =...
     % Parse optional parameters
     makeColorMap = 1;
     scaleCharts = 1;
-    for i=1:1:length(varargin)
+    for i=1:2:length(varargin)
         if strcmpi(varargin{i},'LabelColorMap')
             makeColorMap = 0;
             lcm = varargin(i+1);
