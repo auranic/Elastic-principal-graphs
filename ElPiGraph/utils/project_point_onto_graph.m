@@ -16,8 +16,8 @@ function [MSE, X_projected, EdgeIndices, ProjectionValues] =...
 %   X_projected is matrix of the coordinates of data point projections
 %   EdgeIndices is n-by-1 with number of edge which contains projection
 %   ProjectionValues is n-by-1 real vector with values between 0 and 1
-%   indicating where between Edge(index,1) and Edge(index,2) the projection
-%   was done. 
+%       indicating where between Edge(index,1) and Edge(index,2) the
+%       projection was done.  
 %%
     %Preallocate arrays for result
     [n, m] = size(X);
