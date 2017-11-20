@@ -1,4 +1,4 @@
-function makeAnimation(data,numNodes,filename,varargin)
+function makeAnimation(data, numNodes, filename, varargin)
 
 [NodePositions,Edges,ReportTable] = computeElPT(data,2,varargin{:});
 plot(data(:,1),data(:,2),'ko'); hold on; drawGraph2D(NodePositions(:,1:2),Edges,'NodeSizes',ones(size(NodePositions,1),1),'ShowClusterNumbers',0,'LineWidth',3);  axis off;
