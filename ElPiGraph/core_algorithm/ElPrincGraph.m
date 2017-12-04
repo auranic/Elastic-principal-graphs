@@ -115,12 +115,12 @@ function [NodePositions, ElasticMatrix, ReportTable]...
         elseif strcmpi(varargin{i},'InitNodePositions')
             graph.NodePositions = varargin{i + 1};
         elseif strcmpi(varargin{i},'InitElasticMatrix')
-            graph.Lambda = varargin{i + 1};
-            if graph.Lambda ~= graph.Lambda' %#ok<BDSCA>
+            graph.Lambdas = varargin{i + 1};
+            if graph.Lambdas ~= graph.Lambdas' %#ok<BDSCA>
                 error('ERROR: Elastic matrix must be square and symmetric');
             end
-            graph.Mus = diag(graph.Lambda);
-            graph.Lambda = graph.Lambda - diag(graph.Mus);
+            graph.Mus = diag(graph.Lambdas);
+            graph.Lambdas = graph.Lambdas - diag(graph.Mus);
         elseif strcmpi(varargin{i},'LocalSearch')
             graph.LocalSearch = 1;
             graph.RadiusOfLocalSearch = varargin{i + 1};
@@ -189,7 +189,7 @@ function [NodePositions, ElasticMatrix, ReportTable]...
             graph.nNodes = 2;
         else
             % Otherwise connect each pair of consequent nodes
-            edges = [(1:graph.nNodes-1)', (2:graph.nNodes)];
+            edges = [(1:graph.nNodes-1)', (2:graph.nNodes)'];
         end
         % Create initial ElasticMatrices for specified structure of graph
         graph = MakeUniformElasticMatrix(edges, graph);
@@ -218,14 +218,6 @@ function [NodePositions, ElasticMatrix, ReportTable]...
     %Now we can recalculate MaxBlockSize
     graph.MaxBlockSize = floor(graph.MaxMemorySize / graph.nNodes);
     
-    
-%     %Control the existance of Mu in initial Elastic matrix em
-%     UR = diag(em);
-%     if sum(UR>0) == 0
-%         % There are no non-zero elements on main diagonal. Create it
-%         em = em + diag(Mu*ones(nNodes, 1));
-%     end
-
     if verbose
         display(sprintf(['BARCODE\tENERGY\tNNODES\tNEDGES\tNRIBS\tNSTARS'...
             '\tNRAYS\tNRAYS2\tMSE MSEP\tFVE\tFVEP\tUE\tUR\tURN\tURN2\tURSD']));

@@ -1,13 +1,11 @@
 function [LabelColorMap, partition] =...
-    drawPieChartsMetroMap(NodePositions, Edges, data, labels, nodesMM, varargin)
+    drawPieChartsMetroMap(NodePositions, data, labels, nodesMM, varargin)
 %drawPieChartsMetroMap draw metro map with pie cart in each node
 %
 %   IMPORTANT This procedure does not create figure!
 %
 %Input features
 %   NodePositions is k-by-2 array of x and y coordinates of nodes.
-%   Edges is k-by-2 matrix of integers. Edges(i,1) and Edges(i,2) specify
-%       numbers of two vertex of i-th edge.
 %   data is n-by-m matrix data (each row of matrix contains one observation).
 %   labels is vector of labels (one label for each observation).
 %   'Name',Value pairs can customize view:
@@ -24,14 +22,8 @@ function [LabelColorMap, partition] =...
         error(['labels must be a vector with the same number of',...
             ' elements as number of observations (rows) in data']);
     end
-    % Calculate positions of nodes in metro map
-    %nodesMM = computeMetroMapLayout(NodePositions,Edges);
-    % Calculate graph
-    %Edges1 = Edges - 1;
-    %graph = makeGraph(NodePositions,Edges1);
-    % Form taxon map
-    %TaxonMap = getTaxonMap(graph,data);
-    partition = PartitionData(data,NodePositions,100000,sum(data.^2,2));
+    
+    partition = PartitionData(data, NodePositions);
     
     % Draw diagram
     hold on;
