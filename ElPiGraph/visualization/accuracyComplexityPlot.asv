@@ -47,7 +47,7 @@ function accuracyComplexityPlot(ReportTable, varargin)
     if any(isnan(fvep))
         error(['Requested accuracy "', accuracy, '" was not really calculated.']);
     end
-    bcodes = ReportTable.('BARCODE');
+    bcodes = getfield(ReportTable, 'BARCODE');
     % Create figure
     figure;
     % Draw graph

@@ -8,10 +8,10 @@ function plotMSDEnergyPlot(ReportTable,eigValues)
     % Create figure
     figure;
     % Extract data from structure
-    n = extractfield(ReportTable,'NNODES');
+    n = ReportTable.('NNODES');
     % Draw main graph
-    h = plot(n,[extractfield(ReportTable,'MSE')',...
-        extractfield(ReportTable,'ENERGY')'],'-','LineWidth',2); 
+    h = plot(n,[ReportTable.('MSE'),...
+        ReportTable.('ENERGY')],'-','LineWidth',2); 
     hold on;
     % Draw eigen values if presented
     if nargin == 2
