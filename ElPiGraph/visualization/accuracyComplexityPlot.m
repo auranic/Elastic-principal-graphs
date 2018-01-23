@@ -33,21 +33,23 @@ function accuracyComplexityPlot(ReportTable, varargin)
     end
     
 
-    % Extract data from table
+    % Extract data from structure
     try
-        urn2 = table2array(ReportTable(:, complexity));
+        urn2 = extractfield(ReportTable, complexity)';
     catch ME
         error(['Unknown complexity "', complexity, '".']);
     end
     try
-        fvep = table2array(ReportTable(:, accuracy));
+        fvep = extractfield(ReportTable, accuracy)';
     catch ME
         error(['Unknown accuracy "', accuracy, '".']);
     end
     if any(isnan(fvep))
-        error(['Requested accuracy "', accuracy, '" really does not calculated.']);
+        error(['Requested accuracy "', accuracy, '" was not really calculated.']);
     end
-    bcodes = table2array(ReportTable(:, 'BARCODE'));
+    bcodes = extractfield(ReportTable, 'BARCODE');
+    %Reshape data
+    bcodes = reshape(bcodes{1},size(ReportTable.BARCODE));
     % Create figure
     figure;
     % Draw graph

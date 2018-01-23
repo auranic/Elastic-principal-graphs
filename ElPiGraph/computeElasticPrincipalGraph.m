@@ -50,8 +50,7 @@ function [NodePositions, Edges, ReportTable] =...
 %
 %   [NodePositions, Edges, ReportTable] = 
 %           computeElasticPrincipalGraph(data, NumNodes, ParameterSet)
-%       returns also ReportTable. Report table is table with 17 columns:
-%           STEP is number of iteration
+%       returns also ReportTable. Report table is table with 16 columns:
 %           BARCODE is barcode in form ...S4|S3||N, where N is number of
 %               nodes, S3 is number of three stars, S4 (5,...) is number of
 %               four (five,...) stars.
