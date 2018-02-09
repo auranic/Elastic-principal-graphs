@@ -243,6 +243,10 @@ function [NodePositions, ElasticMatrix, ReportTable]...
         URSD = ENERGY;
     end
 
+    % First, we optimize the graph without any growth
+    
+    [graph, part, ~] = PrimitiveElasticGraphEmbedment(data, graph, part);
+
     % Now we grow the graph up to NumNodes
     i=1; % Number of row of current graph in report
     while (graph.nNodes < NumNodes)
@@ -361,4 +365,3 @@ function graph = MakeUniformElasticMatrix(Edges, graph)
     % Specify star elasticities
     graph.Mus(ind) = graph.Mu;
 end
-

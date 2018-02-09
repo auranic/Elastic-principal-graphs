@@ -174,6 +174,7 @@ function [NodePositions, Edges, ReportTable] =...
 
     mv = mean(data);
     data_centered = bsxfun(@minus, data, mv);
+    np_centered = bsxfun(@minus, np, mv);
 
     [vglobal, uglobal, explainedVariances] = pca(data_centered);
     if reduceDimension
@@ -191,6 +192,7 @@ function [NodePositions, Edges, ReportTable] =...
         display(sprintf('Variance retained in %3.0f dimensions: %2.2f%%',...
             (length(indPC)),perc));
         data_centered = uglobal(:,indPC);
+        np_centered = np_centered*vglobal(:,indPC);
     else
         indPC = 1:size(data,2);
     end
@@ -203,7 +205,7 @@ function [NodePositions, Edges, ReportTable] =...
     else
         [NodePositions, ElasticMatrix, ReportTable] =...
             ElPrincGraph(data_centered, NumNodes, Lambda, Mu,...
-            'InitNodePositions', np, 'InitElasticMatrix', em, varargin{:});
+            'InitNodePositions', np_centered, 'InitElasticMatrix', em, varargin{:});
     end
     
     [row, col] = find(triu(ElasticMatrix, 1));
