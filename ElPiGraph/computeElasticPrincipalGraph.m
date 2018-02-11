@@ -163,18 +163,19 @@ function [NodePositions, Edges, ReportTable] =...
             InitStruct = varargin{i + 1};
         end
     end
+
+    mv = mean(data);
+    data_centered = bsxfun(@minus, data, mv);
     
     if ~isempty(InitStruct)
         % Initialise graph if it is necessary
         np = InitStruct.InitNodes;
         ed = InitStruct.InitEdges;
         em = MakeUniformElasticMatrix(ed, Lambda, Mu);
+        np_centered = bsxfun(@minus, np, mv);
         graphinitialized = 1;
     end
 
-    mv = mean(data);
-    data_centered = bsxfun(@minus, data, mv);
-    np_centered = bsxfun(@minus, np, mv);
 
     [vglobal, uglobal, explainedVariances] = pca(data_centered);
     if reduceDimension
@@ -192,7 +193,9 @@ function [NodePositions, Edges, ReportTable] =...
         display(sprintf('Variance retained in %3.0f dimensions: %2.2f%%',...
             (length(indPC)),perc));
         data_centered = uglobal(:,indPC);
-        np_centered = np_centered*vglobal(:,indPC);
+        if graphinitialized
+            np_centered = np_centered*vglobal(:,indPC);
+        end
     else
         indPC = 1:size(data,2);
     end
