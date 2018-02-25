@@ -100,6 +100,8 @@ function [NodePositions, ElasticMatrix, ReportTable]...
     % default grammar - for a principal tree with pruning
     growGrammars = [{'bisectedge';'addnode2node'},{'bisectedge';'addnode2node'}];
     shrinkGrammars = {'shrinkedge';'removenode'};
+    
+    graph.PenalizedEnergy = false;
 
     % Parse input arguments
     for i=1:2:length(varargin)
@@ -147,7 +149,11 @@ function [NodePositions, ElasticMatrix, ReportTable]...
             end
         elseif strcmpi(varargin{i},'PointWeights')
             data.PointWeights = varargin{i + 1};
+        elseif strcmpi(varargin{i},'BranchingControls')
+            graph.PenalizedEnergy = true;
+            graph.BranchingControls = varargin{i + 1};
         end
+        
     end
 
     % Check the necessity of report

@@ -87,6 +87,6 @@ function [ElasticEnergy, MSE, EP, RP] = ...
             - sum(graph.NodePositions(leaves, :)) / K;
         RP = RP + graph.Mus(StarCenterIndices(i)) * sum(dev .^ 2);
     end
-    % Toatal energy is the sum.
+    % Total energy is the sum.
     ElasticEnergy = MSE + EP + RP;
 end

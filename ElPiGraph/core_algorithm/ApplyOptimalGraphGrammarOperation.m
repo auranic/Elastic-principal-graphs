@@ -126,6 +126,11 @@ function [graphNew, partNew] = ...
             [graph, part1, ElasticEnergy] =...
                 PrimitiveElasticGraphEmbedment(data, graph, part);
         end
+        % Penalizing energy (currently - control for branching, in the future
+        % - it can be also penalizing empty nodes, number of graph components, etc.)
+        if graph.PenalizedEnergy
+            ElasticEnergy = ComputePenalizedElasticEnergy(data,graph,part1);
+        end
         % Remember the best
         if ElasticEnergy<minEnergy
             minEnergy = ElasticEnergy;

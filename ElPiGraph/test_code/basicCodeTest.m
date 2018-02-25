@@ -106,6 +106,16 @@ display(sprintf('Barcode for the tree = %s',getPrimitiveGraphStructureBarCode(En
 pause(2);
 close all; drawnow;
 
+display('Constructing principal tree with mild braching control');
+
+data = load('test_code/branchingTest/thick_turn.data');
+nnodes = 50; computeElasticPrincipalGraph(data,nnodes,'Plots',2); 
+x = get(gcf,'Position'); 
+set(gcf,'Position',[x(1)-x(3) x(2) x(3) x(4)]); 
+computeElasticPrincipalGraph(data,nnodes,'BranchingControls',[0.005,0],'Plots',2);
+
+pause(3);
+close all; drawnow;
 
 %%%%%%%%%%%%%%%%% Test 2
 display('==================== Test 2 ========================');
