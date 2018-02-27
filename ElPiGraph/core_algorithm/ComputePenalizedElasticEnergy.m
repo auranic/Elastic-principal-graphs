@@ -20,7 +20,9 @@ beta = graph.BranchingControls(2);
     % Now lambdas are modified accordingly to the penalty
     Ks = sum(graph.Lambdas>0);
     lp = max(Ks(row),Ks(col));
-    lpenalized = l+alpha*(lp'-1);
+    lp = lp-2;
+    lp(lp<0) = 0; 
+    lpenalized = l+alpha*lp';   %remove -1
     
     EP = sum(lpenalized(:) .* sum(dev.^2, 2));
 
