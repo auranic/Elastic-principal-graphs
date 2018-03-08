@@ -251,8 +251,10 @@ function [NodePositions, ElasticMatrix, ReportTable]...
 
     % First, we optimize the graph without any growth
     
-    [graph, part, ~] = PrimitiveElasticGraphEmbedment(data, graph, part);
+    %[graph, part, ~] = PrimitiveElasticGraphEmbedment(data, graph, part);
+    [graph, part] = ApplyOptimalGraphGrammarOperation(data, graph, part,{});
 
+    
     % Now we grow the graph up to NumNodes
     i=1; % Number of row of current graph in report
     while (graph.nNodes < NumNodes)

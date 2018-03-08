@@ -36,7 +36,12 @@ beta = graph.BranchingControls(2);
         K = sum(leaves);
         dev = graph.NodePositions(StarCenterIndices(i),:)...
             - sum(graph.NodePositions(leaves, :)) / K;
-        RP = RP + graph.Mus(StarCenterIndices(i)) * power(K,beta) * sum(dev .^ 2);
+        %RP = RP + graph.Mus(StarCenterIndices(i)) * power(K,beta) * sum(dev .^ 2);
+        CorrectedMu = graph.Mus(StarCenterIndices(i));
+        if K>2 
+            CorrectedMu = CorrectedMu/beta;
+        end
+        RP = RP + CorrectedMu  * sum(dev .^ 2);
     end
     % Total energy is the sum.
     PenalizedEnergy = MSE + EP + RP;

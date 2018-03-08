@@ -177,7 +177,11 @@ function [NodePositions, Edges, ReportTable] =...
         % Initialise graph if it is necessary
         np = InitStruct.InitNodes;
         ed = InitStruct.InitEdges;
-        em = MakeUniformElasticMatrix(ed, Lambda, Mu);
+        if(~isfield(InitStruct,'ElasticMatrix'))
+            em = MakeUniformElasticMatrix(ed, Lambda, Mu);
+        else
+            em = InitStruct.ElasticMatrix;
+        end
         np_centered = bsxfun(@minus, np, mv);
         graphinitialized = 1;
     end

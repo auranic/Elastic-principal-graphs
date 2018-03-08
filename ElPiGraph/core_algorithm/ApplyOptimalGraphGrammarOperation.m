@@ -84,6 +84,15 @@ function [graphNew, partNew] = ...
         ElasticVectorsAll    = cat(2, ElasticVectorsAll, ElsaticVectors);
         NodeIndicesArrayAll  = cat(2, NodeIndicesArrayAll, NodeIndicesArray);
     end
+
+    % special case - if the set of operations is empty then we optimize the
+    % unmodified matrix
+    
+    if size(operationtypes,1)==0
+        NodePositionArrayAll(:,:,1) = graph.NodePositions;
+        ElasticMatricesAll(:, :, 1) = graph.Lambdas;
+        ElasticVectorsAll(:, 1) = graph.Mus;
+    end
     
     
     % Currently found the best Energy
@@ -98,6 +107,7 @@ function [graphNew, partNew] = ...
     % Copy graphs and partitions
     graphNew = graph;
     partNew = part;
+    
     
     % Test each possible continuation and select the best one
     for i=1:size(ElasticMatricesAll,3)
@@ -122,9 +132,21 @@ function [graphNew, partNew] = ...
                 sd, graph.RadiusOfLocalSearch);
             [graph, part1, ElasticEnergy] =...
                 PrimitiveElasticGraphEmbedment(data, graph, part);
-        else
-            [graph, part1, ElasticEnergy] =...
-                PrimitiveElasticGraphEmbedment(data, graph, part);
+        else 
+            
+            graph_temp = graph;
+            if graph.PenalizedEnergy
+                alpha = graph.BranchingControls(1);
+                beta = graph.BranchingControls(2);
+                Connectivity = sum(graph.Lambdas>0);
+                graph_temp.Mus(Connectivity>2) = graph.Mus(Connectivity>2)/beta;
+            end
+            
+            [graph_res, part1, ElasticEnergy] =...
+                PrimitiveElasticGraphEmbedment(data, graph_temp, part);
+            
+            graph_res.Mus = graph.Mus;
+            graph = graph_res;
         end
         % Penalizing energy (currently - control for branching, in the future
         % - it can be also penalizing empty nodes, number of graph components, etc.)
