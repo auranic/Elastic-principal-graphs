@@ -6,7 +6,7 @@ dims = [1:3];
 nnodes = size(n,1);
 Lambda = 0.01;
 Mu = 0.1;
-TrimmingRadius = 0.02;
+TrimmingRadius = Inf;
 
 % branching control parameter
 Alpha = 0.01;
