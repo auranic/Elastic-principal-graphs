@@ -88,12 +88,20 @@ function [NodePositions, Edges, ReportTable] =...
 %       'Mu' is penalty coefficient for deviation from harmonicity.
 %           Coefficient is positive double number. If RP is vector then see
 %           Several epoch strategies below.
-%       'BranchingControl' introduces two penalty coefficients for
-%           extensive branching, first \alpha for edges and second \beta for stars. The
-%           parameter should be a pair of real numbers. 
-%           The elasticity of an edge becomes \lambda+\alpha*(k-2), where k
-%           is the maximum star order to which the edge belongs, and the
-%           elasticity of a star becomes \mu*k^\beta
+%       'BranchingControl' controls behaviour of the graph for branching
+%           The parameter should be a pair of real numbers: [alpha beta]
+%           The elasticity of an edge at the graph selection stage 
+%           becomes \lambda+\alpha*(k-2), where k
+%           is the maximum star order to which the edge belongs. 
+%           Thus, higher alpha penalizes appearance of higher order stars.
+%           The value of alpha does not affect the optimization of a given 
+%           graph structure.
+%           The recommended default value for alpha is 0.01.
+%           Values of alpha bigger than 0.5 should effectively forbid any
+%           branching: thus, forcing construction of a principal curve
+%           instead of a tree.
+%           The value of beta remains experimental and currently should be
+%           set to 1
 %       'TrimmingRadius' is robust or trimming radius. To perform non robust
 %           algorithm specify TrimmingRadius = 0. 
 %       'InitGraph' is structure with two elements: InitNodes and

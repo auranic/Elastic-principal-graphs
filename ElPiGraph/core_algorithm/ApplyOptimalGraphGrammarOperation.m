@@ -92,12 +92,13 @@ function [graphNew, partNew] = ...
         NodePositionArrayAll(:,:,1) = graph.NodePositions;
         ElasticMatricesAll(:, :, 1) = graph.Lambdas;
         ElasticVectorsAll(:, 1) = graph.Mus;
+        NodeIndicesArrayAll = 1:size(graph.NodePositions,1);
     end
     
     
     % Currently found the best Energy
     minEnergy = realmax;
-    %Just in case prepare array of indeces for special case
+    %Just in case prepare array of indices for special case
     sd = graph.nNodes;
     sd1 = GetNeighbourhoodOnTheGraph(graph.Lambdas, sd, 1);
     sd1 = fast_setdiff1(sd1,sd);
@@ -140,12 +141,19 @@ function [graphNew, partNew] = ...
                 beta = graph.BranchingControls(2);
                 Connectivity = sum(graph.Lambdas>0);
                 graph_temp.Mus(Connectivity>2) = graph.Mus(Connectivity>2)/beta;
+                stars = find(Connectivity>2);
+                for i=1:length(stars)
+                    leaves = find(graph_temp.Lambdas(:,stars(i))>0);
+                    graph_temp.Lambdas(stars(i),leaves) = graph.Lambdas(stars(i),leaves)/beta;
+                    graph_temp.Lambdas(leaves,stars(i)) = graph.Lambdas(leaves,stars(i))/beta;
+                end
             end
             
             [graph_res, part1, ElasticEnergy] =...
                 PrimitiveElasticGraphEmbedment(data, graph_temp, part);
             
             graph_res.Mus = graph.Mus;
+            graph_res.Lambdas = graph.Lambdas;
             graph = graph_res;
         end
         % Penalizing energy (currently - control for branching, in the future

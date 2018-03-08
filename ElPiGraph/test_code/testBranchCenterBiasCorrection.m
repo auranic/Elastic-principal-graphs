@@ -6,15 +6,16 @@ dims = [1:3];
 nnodes = size(n,1);
 Lambda = 0.01;
 Mu = 0.1;
-TrimmingRadius = Inf;
+TrimmingRadius = 0.02;
 
 % branching control parameter
 Alpha = 0.01;
 % factor of softening the stars with k>2 and their edges
 beta = 10;
 
-%[Nodes,Edges] = computeElasticPrincipalGraph(x(:,dims),nnodes,'BranchingControls',[0.01 1],'Lambda',Lambda,'Mu',Mu,'TrimmingRadius',TrimmingRadius,'Plots',2,'InitGraph',struct('InitNodes',n(:,dims),'InitEdges',e));
-%[Nodes,Edges] = computeElasticPrincipalGraph(x(:,dims),nnodes,'BranchingControls',[0.01 1],'Lambda',Lambda,'Mu',Mu,'TrimmingRadius',TrimmingRadius,'Plots',2);
+%[Nodes,Edges] = computeElasticPrincipalGraph(x(:,dims),nnodes+30,'BranchingControls',[0.01 1],'Lambda',Lambda,'Mu',Mu,'TrimmingRadius',TrimmingRadius,'Plots',2,'InitGraph',struct('InitNodes',n(:,dims),'InitEdges',e));
+%[Nodes,Edges] = computeElasticPrincipalGraph(x(:,dims),nnodes+30,'BranchingControls',[0.0 10],'Lambda',Lambda,'Mu',Mu,'TrimmingRadius',TrimmingRadius,'Plots',2);
+
 Nodes = n(:,dims);
 Edges = e;
 
