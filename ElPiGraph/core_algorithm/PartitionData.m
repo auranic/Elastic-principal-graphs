@@ -21,9 +21,16 @@ function [partition, dists] = ...
 %   dists is n-by-1 vector. dists(i) is squared distance between node with
 %       number partition(i) and data point X(i,:). 
 %
-    if nargin<5
+    if nargin < 5
         TrimmingRadius = Inf;
     end
+    if nargin < 4 || isempty(SquaredX)
+        SquaredX = sum(X .^ 2, 2);
+    end
+    if nargin <3 || MaxBlockSize == 0
+        MaxBlockSize = floor(10000000 / size(NodePositions, 1));
+    end
+    
     n = size(X, 1);
     partition = zeros(n, 1);
     dists = zeros(n, 1);

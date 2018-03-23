@@ -3,8 +3,7 @@ function [barcode, N] = getPrimitiveGraphStructureBarCode(ElasticMatrix)
 % leaves in element k and barcode.
 
     % Decompose ElasticMatrix
-    Mu = diag(ElasticMatrix);
-    L = ElasticMatrix - diag(Mu);
+    L = ElasticMatrix - diag(diag(ElasticMatrix));
     Connectivities = sum(L>0);
     N = accumarray(Connectivities', 1);
     % Number of nodes

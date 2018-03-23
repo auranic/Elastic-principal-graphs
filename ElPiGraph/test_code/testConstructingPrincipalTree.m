@@ -1,32 +1,33 @@
 setallpaths;
 
-
 global numberOfLocalPoints;
 global numberOfFits;
-global numberOfFullFits;
 global numberOfGraphNodes;
 global FractionOfGraphNodes;
 global TimeForFitting;
-global CountNumberOfIterations;
-global argCount;
+global TimeForPreparation;
+global numberOfLocalNodes;
 
 
-numberOfLocalPoints=[];
-numberOfFits=0;
-numberOfFullFits=0;
-numberOfGraphNodes=0;
-FractionOfGraphNodes=[];
-TimeForFitting=[];
-NumberOfIterations=[];
+numberOfLocalPoints = [];
+numberOfFits = [];
+numberOfGraphNodes = [];
+FractionOfGraphNodes = [];
+TimeForFitting = [];
+TimeForPreparation = [];
+numberOfLocalNodes = [];
+
+
 argCount = zeros(1,2);
+myCounts = 0;
 
-variability = 1;
+variability = 0;
 drawing = 0;
 
-X = load('./test_data/tree23/tree23.data');
 
 if variability == 1
     %X = load('./test_data/iris/iris.data');
+    X = load('./test_data/tree23/tree23.data');
     
     %X = load('./test_data/circle/simple_circle.data');
     %X = load('./test_data/mosaic/mosaic.txt');
@@ -34,6 +35,8 @@ if variability == 1
     %X = load('C:/Datas/ElGraph_Matlab/competitors/PAMI2016/toy/tree_600.txt');
 
     %X = load('./test_data/development/guo2010.data');
+else
+    load('./test_code/AverageWeights/testdata.mat','X');
 end
 %X = zscore(X);
 
@@ -70,8 +73,8 @@ dim = size(X,2)
    %tic; [np,em] = ElPrincTree_matlab(X,maxNumNodes,0.01,0.1); toc;
    %tic; [np,ed,ReportTable] = computeElasticPrincipalGraph_java(X,maxNumNodes,@parametersPrincipalCircle,'RP',0.0001); toc;
    close all;
-   tic; [np,ed,ReportTable] = computeElasticPrincipalGraph(X, maxNumNodes, 'Plots', 0); toc;
-%    tic; [np,ed,ReportTable] = computeElasticPrincipalGraph(X, maxNumNodes, 'Plots', 0, 'LocalSearch', 2); toc;
+%   tic; [np,ed,ReportTable] = computeElasticPrincipalGraph(X, maxNumNodes, 'Plots', 0); toc;
+  tic; [np,ed,ReportTable] = computeElasticPrincipalGraph(X, maxNumNodes, 'Plots', 0, 'LocalSearch', 2); toc;
 %   profile viewer
    %tic; [np,ed,ReportTable] = computeElasticPrincipalCurve(X,maxNumNodes,'Mu',10); toc;
    %tic; [np,ed,ReportTable] = computeElasticPrincipalCircle(X,maxNumNodes,'Mu',0.0001); toc;
@@ -100,4 +103,11 @@ if drawing == 1;
    hist(TimeForFitting,50); title('TimeForFitting');
 end 
    
+numberOfLocalPoints = numberOfLocalPoints(:);
+numberOfFits = numberOfFits(:);
+numberOfGraphNodes = numberOfGraphNodes(:);
+FractionOfGraphNodes = FractionOfGraphNodes(:);
+TimeForFitting = TimeForFitting(:);
+TimeForPreparation = TimeForPreparation(:);
+numberOfLocalNodes = numberOfLocalNodes(:);
   

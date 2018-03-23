@@ -1,12 +1,12 @@
-function drawPieChart(x,y,radius,Proportions,Colors)
+function drawPieChart(x, y, radius, Proportions, Colors)
 %drawPieChart draw one pie chart with specified properties:
 %   x and y are coordinates of centre of circle
 %   radius is radius of circle
 %   Proportions ia vector of couns of casses for each color
 %   Colors is vector of colors
 
-    % Trancform counts to proportion
-    prop = Proportions/sum(Proportions);
+    % Trancform counts to proportions
+    prop = Proportions / sum(Proportions);
     % Starts from zero angle
     angle = 0;
     % Draw chart

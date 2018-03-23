@@ -50,8 +50,7 @@ function [NodePositions, Edges, ReportTable] =...
 %
 %   [NodePositions, Edges, ReportTable] = 
 %           computeElasticPrincipalGraph(data, NumNodes, ParameterSet)
-%       returns also ReportTable. Report table is table with 17 columns:
-%           STEP is number of iteration
+%       returns also ReportTable. Report table is table with 16 columns:
 %           BARCODE is barcode in form ...S4|S3||N, where N is number of
 %               nodes, S3 is number of three stars, S4 (5,...) is number of
 %               four (five,...) stars.
@@ -89,6 +88,20 @@ function [NodePositions, Edges, ReportTable] =...
 %       'Mu' is penalty coefficient for deviation from harmonicity.
 %           Coefficient is positive double number. If RP is vector then see
 %           Several epoch strategies below.
+%       'BranchingControl' controls behaviour of the graph for branching
+%           The parameter should be a pair of real numbers: [alpha beta]
+%           The elasticity of an edge at the graph selection stage 
+%           becomes \lambda+\alpha*(k-2), where k
+%           is the maximum star order to which the edge belongs. 
+%           Thus, higher alpha penalizes appearance of higher order stars.
+%           The value of alpha does not affect the optimization of a given 
+%           graph structure.
+%           The recommended default value for alpha is 0.01.
+%           Values of alpha bigger than 0.5 should effectively forbid any
+%           branching: thus, forcing construction of a principal curve
+%           instead of a tree.
+%           The value of beta remains experimental and currently should be
+%           set to 1
 %       'TrimmingRadius' is robust or trimming radius. To perform non robust
 %           algorithm specify TrimmingRadius = 0. 
 %       'InitGraph' is structure with two elements: InitNodes and
@@ -164,17 +177,23 @@ function [NodePositions, Edges, ReportTable] =...
             InitStruct = varargin{i + 1};
         end
     end
+
+    mv = mean(data);
+    data_centered = bsxfun(@minus, data, mv);
     
     if ~isempty(InitStruct)
         % Initialise graph if it is necessary
         np = InitStruct.InitNodes;
         ed = InitStruct.InitEdges;
-        em = MakeUniformElasticMatrix(ed, Lambda, Mu);
+        if(~isfield(InitStruct,'ElasticMatrix'))
+            em = MakeUniformElasticMatrix(ed, Lambda, Mu);
+        else
+            em = InitStruct.ElasticMatrix;
+        end
+        np_centered = bsxfun(@minus, np, mv);
         graphinitialized = 1;
     end
 
-    mv = mean(data);
-    data_centered = bsxfun(@minus, data, mv);
 
     [vglobal, uglobal, explainedVariances] = pca(data_centered);
     if reduceDimension
@@ -192,6 +211,9 @@ function [NodePositions, Edges, ReportTable] =...
         display(sprintf('Variance retained in %3.0f dimensions: %2.2f%%',...
             (length(indPC)),perc));
         data_centered = uglobal(:,indPC);
+        if graphinitialized
+            np_centered = np_centered*vglobal(:,indPC);
+        end
     else
         indPC = 1:size(data,2);
     end
@@ -204,7 +226,7 @@ function [NodePositions, Edges, ReportTable] =...
     else
         [NodePositions, ElasticMatrix, ReportTable] =...
             ElPrincGraph(data_centered, NumNodes, Lambda, Mu,...
-            'InitNodePositions', np, 'InitElasticMatrix', em, varargin{:});
+            'InitNodePositions', np_centered, 'InitElasticMatrix', em, varargin{:});
     end
     
     [row, col] = find(triu(ElasticMatrix, 1));

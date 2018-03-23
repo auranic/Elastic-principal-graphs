@@ -28,7 +28,6 @@ function drawMetroMap(NodePositions, Edges, varargin)
     showClusterNumbers = 1;
     drawPieChart = 0;
     data = 0;
-    labelCM = 0;
     labels = 0;
     % Parse input features
     for i = 1:2:length(varargin)
@@ -42,8 +41,6 @@ function drawMetroMap(NodePositions, Edges, varargin)
             drawPieChart = varargin{i + 1};
         elseif strcmpi(varargin{i}, 'Data')
             data = varargin{i + 1};
-        elseif strcmpi(varargin{i}, 'LabelColorMap')
-            labelCM = varargin{i + 1};
         elseif strcmpi(varargin{i}, 'Labels')
             labels = varargin{i + 1};
         end
@@ -60,7 +57,7 @@ function drawMetroMap(NodePositions, Edges, varargin)
         if isscalar(data) || isscalar(labels)
             error('Data and labels must be presented to draw pie chart');
         end
-        drawPieChartsMetroMap(NodePositions, Edges, data, labels, varargin{:});
+        drawPieChartsMetroMap(NodePositions, data, labels, varargin{:});
    end
    title('Metro map layout of the principal tree','FontSize',20);
    hold off;

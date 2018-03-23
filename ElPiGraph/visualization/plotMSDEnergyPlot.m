@@ -7,11 +7,11 @@ function plotMSDEnergyPlot(ReportTable,eigValues)
 
     % Create figure
     figure;
-    % Extract data from table
-    n = table2array(ReportTable(:,'NNODES'));
+    % Extract data from structure
+    n = ReportTable.('NNODES');
     % Draw main graph
-    h = plot(n,[table2array(ReportTable(:,'MSE')),...
-        table2array(ReportTable(:,'ENERGY'))],'-','LineWidth',2); 
+    h = plot(n,[ReportTable.('MSE'),...
+        ReportTable.('ENERGY')],'-','LineWidth',2); 
     hold on;
     % Draw eigen values if presented
     if nargin == 2

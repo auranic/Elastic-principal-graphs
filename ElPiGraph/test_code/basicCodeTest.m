@@ -106,6 +106,16 @@ display(sprintf('Barcode for the tree = %s',getPrimitiveGraphStructureBarCode(En
 pause(2);
 close all; drawnow;
 
+display('Constructing principal tree with mild braching control');
+
+data = load('test_code/branchingTest/thick_turn.data');
+nnodes = 50; computeElasticPrincipalGraph(data,nnodes,'Plots',2); 
+x = get(gcf,'Position'); 
+set(gcf,'Position',[x(1)-x(3) x(2) x(3) x(4)]); 
+computeElasticPrincipalGraph(data,nnodes,'BranchingControls',[0.01,1],'Plots',2);
+
+pause(3);
+close all; drawnow;
 
 %%%%%%%%%%%%%%%%% Test 2
 display('==================== Test 2 ========================');
@@ -185,7 +195,7 @@ display('Showing Metro Map Layout');
 NodesMM = computeMetroMapLayout(NodePositions,Edges);
 close all; 
 drawGraph2D(NodesMM,Edges,'ShowClusterNumbers',0); 
-lcm = drawPieChartsMetroMap(NodePositions,Edges,irisz,pointlabels,NodesMM);
+lcm = drawPieChartsMetroMap(NodePositions, irisz, pointlabels, NodesMM);
 
 
 pause(2);
@@ -199,7 +209,7 @@ lcm('Iris-versicolor') = [0 1 1]; % Versicolor will be light blue
 lcm('Iris-virginica') = [1 0 1]; % Virginica will be purple
 close all; 
 drawGraph2D(NodesMM,Edges,'ShowClusterNumbers',0); 
-drawPieChartsMetroMap(NodePositions,Edges,irisz,pointlabels,NodesMM,'LabelColorMap',lcm);
+drawPieChartsMetroMap(NodePositions, irisz, pointlabels, NodesMM, 'LabelColorMap', lcm);
 
 pause(2);
 close all; drawnow;
@@ -242,22 +252,24 @@ display('Third stage: constructing robust principal principal graph approximatin
 NodesMM = computeMetroMapLayout(NodePositions,Edges);
 figure;
 drawGraph2D(NodesMM,Edges,'ShowClusterNumbers',0);
-drawPieChartsMetroMap(NodePositions,Edges,hgdp,labelNations,NodesMM,'LabelColorMap',lcm);
+drawPieChartsMetroMap(NodePositions, hgdp, labelNations, NodesMM, 'LabelColorMap', lcm);
 
 pause(2);
 close all; drawnow;
 
 display('Showing the piecharts together with tree and data points in projection onto the PCA plane');
 
-[LabelColorMap,partition] = drawPieChartsMetroMap(NodePositions,Edges,hgdp,labelNations,NodesMM); 
+[LabelColorMap,partition] = drawPieChartsMetroMap(NodePositions, hgdp, labelNations, NodesMM); 
 close all; 
 drawPieChartsProc(NodePositions,partition,labelNations,NodesMM,'LabelColorMap',lcm,'ScaleCharts',0.8); 
 drawGraph2D(NodePositions,Edges,'NodeSizes',zeros(size(NodePositions,1),1),'ShowClusterNumbers',0); 
-for i=1:size(hgdp,1) if ~strcmp(labelNations(i),'_') 
-plot(hgdp(i,1),hgdp(i,2),'ks','MarkerFaceColor',lcm(char(labelNations(i))),'MarkerSize',6); 
-hold on; 
-end; 
+for i=1:size(hgdp,1)
+    if ~strcmp(labelNations(i),'_')
+        plot(hgdp(i,1),hgdp(i,2),'ks','MarkerFaceColor',lcm(char(labelNations(i))),'MarkerSize',6);
+        hold on;
+    end;
 end;
 
 pause(5);
 close all; drawnow;
+    

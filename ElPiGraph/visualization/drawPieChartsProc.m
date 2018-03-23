@@ -1,6 +1,6 @@
 function [LabelColorMap] =...
     drawPieChartsProc(NodePositions, partition, Labels, varargin)
-%drawPieChartsProc is procedure to draw pie chats in each nodeof graph
+%drawPieChartsProc is procedure to draw pie chats in each node of graph
 %
 %   IMPORTANT This procedure does not create figure!
 %
@@ -42,12 +42,10 @@ function [LabelColorMap] =...
     end
     % Calculate scale for charts
     scale = sqrt(sum(std(NodePositions(:,1:2))));
-    % Calculate node sizes from partition
-    NodeNum = length(partition);
     %NodeSizes = histc(partition,[min(partition):max(partition)]);
 
-    if length(find(partition==0))>0
-	    ns = histc(partition,min(partition):max(partition));
+    if sum(partition == 0) > 0
+	    ns = histc(partition, min(partition):max(partition));
 	    NodeSizes = ns(2:end);
     else
 	    NodeSizes = accumarray(partition, 1, [size(NodePositions, 1), 1]) + 1;
@@ -58,7 +56,7 @@ function [LabelColorMap] =...
     % Rescale data
     ns = ns / max(ns) * scale / 5 * scaleCharts;
     %Draw pie charts
-    for i=1:size(NodePositions,1)
+    for i=1:size(NodePositions, 1)
         %Get taxon
         taxon = find(partition==ind(i));
         %Labels(taxon)

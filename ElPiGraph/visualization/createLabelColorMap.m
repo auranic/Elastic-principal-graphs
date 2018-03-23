@@ -1,4 +1,6 @@
 function [LabelColorMap] = createLabelColorMap(FileName, ColumnNumber)
+% Create labelled colour map for labaels defined in column ColumnNumber in
+% the text file FileName. All colours are randomly generated.
 
 LabelColorMap = containers.Map;
 
