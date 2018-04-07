@@ -8,8 +8,14 @@ X = rand(nData,dim);
 ind = randsample(nData,nNodes);
 NodePositions = X(ind,:);
 
+tic;
 XSquared = sum(X.^2,2);
+toc;
 
 tic;
 [partition,dists] = PartitionData(X,NodePositions,100000,XSquared);
 toc
+
+tic;
+[idx,dist] = knnsearch(NodePositions,X,'k',1);
+toc;

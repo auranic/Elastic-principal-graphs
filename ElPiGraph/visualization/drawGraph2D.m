@@ -21,6 +21,7 @@ function drawGraph2D(NodePositions,Edges,varargin)
     % Specify default values
     NodeSizes = zeros(NodeNum,1);
     LineWidth = 1;
+    LineColor = 'r';
     showClusterNumbers = 1;
     % Parse input features
     for i = 1:2:length(varargin)
@@ -30,6 +31,8 @@ function drawGraph2D(NodePositions,Edges,varargin)
             NodeSizes = varargin{i + 1};
         elseif strcmpi(varargin{i}, 'LineWidth')
             LineWidth = varargin{i + 1};
+        elseif strcmpi(varargin{i}, 'LineColor')
+            LineColor = varargin{i + 1};
         end
     end
 
@@ -70,7 +73,7 @@ function drawGraph2D(NodePositions,Edges,varargin)
     for i=1:EdgeNum
         plot([np(Edges(i,1),1) np(Edges(i,2),1)],...
              [np(Edges(i,1),2) np(Edges(i,2),2)],...
-             'r-','LineWidth',LineWidth);
+             'r-','LineWidth',LineWidth,'Color',LineColor);
     end
     rotate3d off;
 end

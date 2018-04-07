@@ -11,10 +11,12 @@ TrimmingRadius = 0.02;
 % branching control parameter
 Alpha = 0.01;
 % factor of softening the stars with k>2 and their edges
-beta = 10;
+betaLambda = 10;
+betaMu = 2;
 
 %[Nodes,Edges] = computeElasticPrincipalGraph(x(:,dims),nnodes+30,'BranchingControls',[0.01 1],'Lambda',Lambda,'Mu',Mu,'TrimmingRadius',TrimmingRadius,'Plots',2,'InitGraph',struct('InitNodes',n(:,dims),'InitEdges',e));
-%[Nodes,Edges] = computeElasticPrincipalGraph(x(:,dims),nnodes+30,'BranchingControls',[0.0 10],'Lambda',Lambda,'Mu',Mu,'TrimmingRadius',TrimmingRadius,'Plots',2);
+[Nodes,Edges] = computeElasticPrincipalGraph(x(:,dims),nnodes,'BranchingControls',[0.01 1],'Lambda',Lambda,'Mu',Mu,'TrimmingRadius',TrimmingRadius,'Plots',2,'InitGraph',struct('InitNodes',n(:,dims),'InitEdges',e));
+%[Nodes,Edges] = computeElasticPrincipalGraph(x(:,dims),nnodes,'BranchingControls',[0.0 10],'Lambda',Lambda,'Mu',Mu,'TrimmingRadius',TrimmingRadius,'Plots',2);
 
 Nodes = n(:,dims);
 Edges = e;
@@ -24,11 +26,11 @@ em = MakeUniformElasticMatrix(Edges, Lambda, Mu);
   M = diag(em);
   connectivity = sum(L>0);
   stars = find(connectivity>2);
-  M(stars) = Mu/beta;
+  M(stars) = Mu/betaMu;
   for i=1:length(stars)
     leaves = find(L(:,stars(i))>0);
-    L(stars(i),leaves) = Lambda/beta;
-    L(leaves,stars(i)) = Lambda/beta;
+    L(stars(i),leaves) = Lambda/betaLambda;
+    L(leaves,stars(i)) = Lambda/betaLambda;
   end
   em1 = L+diag(M);
 

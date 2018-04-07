@@ -25,6 +25,15 @@ computeElasticPrincipalCircle(cc,30);
 pause(2);
 close all;
 
+display('Constructing principal graph for an example with a loop and branch');
+
+cc = load('test_data/circle/loop_branch.data');
+[np0,ed0] = computeElasticPrincipalCircle(cc,6,'Plots',0);
+[np,ed] = computeElasticPrincipalGraph(cc,30,'InitGraph',struct('InitNodes',np0,'InitEdges',ed0),'BranchingControls',[0.01,1],'Plots',2);
+
+pause(2);
+close all;
+
 
 display('Changing elasticity moduli (more rigid graph)');
 

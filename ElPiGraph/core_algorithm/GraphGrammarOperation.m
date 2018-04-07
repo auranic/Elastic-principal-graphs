@@ -50,6 +50,10 @@ function [NodePositionArray, ElasticMatrices,...
             [NodePositionArray, ElasticMatrices,...
                 ElsaticVectors, NodeIndicesArray] =...
                 ShrinkEdge(NodePositions, Lambdas, Mus);
+        case 'addnode2terminalnode'
+            [NodePositionArray, ElasticMatrices,...
+                ElsaticVectors, NodeIndicesArray] =...
+                AddNode2TerminalNode(NodePositions, Lambdas, Mus, X, partition);
         otherwise
             error('ERROR: operation %s is not defined',type);
     end
@@ -276,5 +280,65 @@ function [NodePositionArray, ElasticMatrices,...
         ElasticMatrices(:, :, i) = em(newinds, newinds);
         ElsaticVectors(:, i) = mus(newinds);
         NodeIndicesArray(:, i) = newinds;
+    end
+end
+
+function [NodePositionArray, ElasticMatrices,...
+    ElsaticVectors, NodeIndicesArray]...
+    = AddNode2TerminalNode(NodePositions, L, Mus, X, partition)
+%
+% This grammar operation adds a node to each leaf graph node 
+% The positions of the node is chosen as a linear extrapolation for a leaf
+% node 
+
+    indL = L > 0;
+    Connectivities = sum(indL);
+
+    NNodes = size(NodePositions,1);
+    NNp1 = NNodes + 1;
+    NumberOfGraphs = sum(Connectivities==1);
+    NodePositionArray = zeros(NNp1, size(NodePositions, 2), NumberOfGraphs);
+    ElasticMatrices   = zeros(NNp1, NNp1, NumberOfGraphs);
+    ElsaticVectors    = zeros(NNp1, NumberOfGraphs); 
+    NodeIndicesArray  = zeros(NNp1, NumberOfGraphs);
+
+    assoc = accumarray(partition + 1, 1, [NNp1, 1]);
+    assoc = assoc(2:end);
+
+    % Create prototypes for new NodePositions, ElasticMatrix and inds
+    NPProt = zeros(NNp1, size(NodePositions, 2));
+    NPProt(1:NNodes,:) = NodePositions;
+    EMProt = zeros(NNp1, NNp1);
+    EMProt(1:NNodes, 1:NNodes) = L;
+    MuProt = zeros(NNp1, 1);
+    MuProt(1:NNodes) = Mus;
+    NIProt = [1:NNodes,0];
+    
+    % Main loop
+    k = 1;
+    for i=1:NNodes
+        % Compute mean edge elastisity for edges with node i 
+        meanLambda = mean(L(i,indL(i,:)));
+        % Put prototypes to corresponding places
+        if(Connectivities(i)==1)
+            NodePositionArray(:, :, k) = NPProt;
+            ElasticMatrices(:, :, k) = EMProt;
+            NodeIndicesArray(:, k) = NIProt;
+            ElsaticVectors(:, k) = MuProt;
+            % Add edge to elasticity matrix
+            ElasticMatrices(NNp1, i, k) = meanLambda;
+            ElasticMatrices(i, NNp1, k) = meanLambda;
+            
+            % Add node to terminal node
+            ineighbour = find(indL(i,:));
+            % Calculate new node position
+            NewNodePosition = NodePositions(i, :) + (NodePositions(i, :)...
+                - NodePositions(ineighbour, :))/10;
+            % Complete elasticity matrix
+            ElsaticVectors(i, k) = Mus(ineighbour);
+            % Fill NodePosition
+            NodePositionArray(NNp1,:, k) = NewNodePosition;
+            k = k+1;
+        end
     end
 end
