@@ -10,13 +10,13 @@
 % in order to decrease density (but not remove the data points completely,
 % one will need 'bridges' between trajectory fragments.
 
-TrimmingRadius = 3;
+TrimmingRadius = 4;
 Lambda = 0.00001;
 Mu = 0.2;
 Nnodes = 200;
 
 %%%%%%%%%% Reading the image data and converting to a cloud of points in 2D
-[A,map] = imread('test_data\travel_maze/tm3_tiny.png'); 
+[A,map] = imread('tm3_tiny.png'); 
 A1 = 255-A; 
 [x,y] = find(A1(:,:,1)>0); 
 plot(y,x,'k.'); axis equal; tm = [y x];
