@@ -72,3 +72,6 @@ computeRobustElasticPrincipalGraph.m		- computes robust version of elastic princ
 setallpaths.m				- set all paths to other folders (needed if some functions are called directly, bypassing the root folder "computeElasticPrincipalXXX.m" functions)
 
  
+### Acknowledgements
+
+Supported by the University of Leicester (UK), Institut Curie (FR), the Ministry of Education and Science of the Russian Federation, project № 14.Y26.31.0022, ITMO Cancer SysBio program (MOSAIC project), INCa PLBIO program (Calys project).
