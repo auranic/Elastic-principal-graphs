@@ -148,7 +148,7 @@ function [NodePositions, ElasticMatrix, ReportTable]...
                 graph.MaxMemorySize = str2double(MaxBlockSize);
             end
         elseif strcmpi(varargin{i},'PointWeights')
-            data.PointWeights = varargin{i + 1};
+            data.Weights = varargin{i + 1};
         elseif strcmpi(varargin{i},'BranchingControls')
             graph.PenalizedEnergy = true;
             graph.BranchingControls = varargin{i + 1};
@@ -163,16 +163,16 @@ function [NodePositions, ElasticMatrix, ReportTable]...
         report = true;
     end
     
-    % Check PointWeights
+    % Check Point Weights
     if isempty(data.Weights)
         data.Weights = ones(data.nPoints, 1);
         data.XW = data.X;
     else
-        if length(data.PointWeights) ~= data.nPoints
+        if length(data.Weights) ~= data.nPoints
             error('Number of point weights must be the same as nmber of points');
         end
-        data.PointWeights = data.PointWeights(:);
-        data.XW = bsxfun(@times,X, data.PointWeights);
+        data.Weights = data.Weights(:);
+        data.XW = bsxfun(@times,X, data.Weights);
     end
     
     % Check consistency of initial elastic matrix and node positions

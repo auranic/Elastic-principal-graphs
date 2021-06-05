@@ -7,7 +7,7 @@ function [NodeClusterCenters,NodeClusterRelativeSize] = ComputeWeightedAverage2(
 %       observation.
 %   partition is n-by-1 (column) vector of node numbers. This vector
 %       associate data points with Nodes.
-%   PointWeights is n-by-m (column) vector of point weights.
+%   PointWeights is n-by-1 (column) vector of point weights.
 %   NumberOfNodes is number of nodes to calculate means.
 %
 %Important! if there is no point associated with node then coordinates of
