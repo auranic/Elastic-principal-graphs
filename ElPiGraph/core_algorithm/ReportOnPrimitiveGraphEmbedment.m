@@ -1,10 +1,6 @@
 function [BARCODE, ENERGY, NNODES, NEDGES, NRIBS, NSTARS, NRAYS, NRAYS2,...
     MSE, MSEP, FVE, FVEP, UE, UR, URN, URN2, URSD] =...
     ReportOnPrimitiveGraphEmbedment(data, graph, part, computeMSEP)
-
-% X, NodePositions, ElasticMatrix,...
-%     partition, dists, computeMSEP)
-
 % This function computes various measurements concerning a primitive graph
 % embedment: 
 %   BARCODE is barcode in form ...S4|S3||N, where N is number of nodes, S3
