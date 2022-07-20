@@ -1,6 +1,6 @@
 function [PenalizedEnergy] = ComputePenalizedElasticEnergy(data,graph,part)
-%UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
+%ComputePenalizedElasticEnergy computes elastic energy with penalty for 
+%   branching.
 
 alpha = graph.BranchingControls(1);
 beta = graph.BranchingControls(2);
@@ -45,8 +45,4 @@ beta = graph.BranchingControls(2);
     end
     % Total energy is the sum.
     PenalizedEnergy = MSE + EP + RP;
-
-
-
 end
-
