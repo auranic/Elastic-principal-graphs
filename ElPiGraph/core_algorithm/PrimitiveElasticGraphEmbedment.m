@@ -222,13 +222,10 @@ end
 function [NewNodePositions] =...
     FitGraph2DataGivenPartitionLocal(data, graph, part, SpringLaplacianMatrix)
 
-% XLocal, PointWeightsLocal,...
-%     NodePositions, SpringLaplacianMatrix, partitionLocal, NodeSubSet)
 %%%%%%%%%%%%%%%%%%%%%%%
 %% Solves the SLAU to find new node positions, local version
 %%%%%%%%%%%%%%%%%%%%%%%
     % Define sizes
-%     NumberOfNodes = graph.nNodes;
     SizeSubSet = length(graph.NodesSubSet);
     [NodeClusterCentersLocal, NodeClusterRelativeSizeLocal] =...
         ComputeWeightedAverage(data, part, SizeSubSet);
