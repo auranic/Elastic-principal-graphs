@@ -143,9 +143,9 @@ function [NodePositions, Edges, ReportTable] =...
 %
 %
 %Example of use:  
-%   load('test_data/iris/iris.mat');
+%   load('test_data/iris/iris.data');
 %   [NodePositions, Edges, ReportTable] =...
-%       computeElasticPrincipalGraph(table2array(iris(:,2:end)),20);
+%       computeElasticPrincipalGraph(iris(:,2:end),20);
 %
     % Can be removed if all paths are set before.
     setallpaths;
